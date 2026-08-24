@@ -3,12 +3,27 @@ import { router, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import { computed, ref, watch } from 'vue';
 import { searchState } from '../composables/search';
+import { cartCount, cartTotal, cartLines, setQty } from '../composables/cart';
 
 const page = usePage();
 const auth = computed(() => page.props.auth);
 
 const can = (permission: string) =>
     !!auth.value?.user && auth.value.user.permissions.includes(permission);
+
+const cartOpen = ref(false);
+
+const showCart = computed(() => {
+    const current = route().current() ?? '';
+    return current === 'menu.catalog' && cartCount.value > 0;
+});
+
+const goCheckout = () => {
+    cartOpen.value = false;
+    router.get(route('checkout'));
+};
+
+const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
 
 const pageTitle = computed(() => {
     const current = route().current() ?? '';
@@ -135,6 +150,11 @@ const logout = () => {
                     <span class="brand">{{ pageTitle }}</span>
                 </div>
                 <div class="header-right">
+                    <div v-if="showCart" class="cart-pill" @click="cartOpen = true">
+                        <var-icon name="cart" :size="18" />
+                        <span class="cart-pill-count">{{ cartCount }}</span>
+                        <span class="cart-pill-total">{{ rupiah(cartTotal) }}</span>
+                    </div>
                     <var-button v-if="isSearchable" round text @click="startSearch">
                         <var-icon name="magnify" :size="22" />
                     </var-button>
@@ -208,6 +228,54 @@ const logout = () => {
                 :icon="item.icon"
             />
         </var-bottom-navigation>
+
+        <var-popup v-model:show="cartOpen" position="bottom" class="cart-popup">
+            <div class="cart-sheet">
+                <div class="cart-sheet-header">
+                    <span class="cart-sheet-title">Keranjang</span>
+                    <var-button round text @click="cartOpen = false">
+                        <var-icon name="close-circle-outline" :size="22" color="#64748b" />
+                    </var-button>
+                </div>
+
+                <div v-if="cartLines.length === 0" class="cart-empty">Keranjang kosong.</div>
+
+                <div v-for="line in cartLines" :key="line.item_id" class="cart-line">
+                    <div class="cart-line-photo">
+                        <img v-if="line.photo_url" :src="line.photo_url" :alt="line.name" />
+                        <var-icon v-else name="image-outline" :size="18" color="#cbd5e1" />
+                    </div>
+                    <div class="cart-line-info">
+                        <span class="cart-line-name">{{ line.name }}</span>
+                        <span class="cart-line-price">{{ rupiah(line.price) }} × {{ line.qty }}</span>
+                    </div>
+                    <div class="cart-line-actions">
+                        <span class="cart-line-subtotal">{{ rupiah(line.price * line.qty) }}</span>
+                        <var-button round text class="qty-btn" @click="setQty(line.item_id, line.qty - 1)">
+                            <var-icon name="minus" :size="16" />
+                        </var-button>
+                        <span class="qty-val">{{ line.qty }}</span>
+                        <var-button round text class="qty-btn" @click="setQty(line.item_id, line.qty + 1)">
+                            <var-icon name="plus" :size="16" />
+                        </var-button>
+                    </div>
+                </div>
+
+                <div v-if="cartLines.length > 0" class="cart-total-row">
+                    <span class="cart-total-label">Total</span>
+                    <span class="cart-total-value">{{ rupiah(cartTotal) }}</span>
+                </div>
+
+                <var-button
+                    v-if="cartLines.length > 0"
+                    class="cart-checkout-btn"
+                    block
+                    @click="goCheckout"
+                >
+                    Checkout
+                </var-button>
+            </div>
+        </var-popup>
     </div>
 </template>
 
@@ -273,5 +341,168 @@ const logout = () => {
     z-index: 99;
     background: linear-gradient(135deg, #fb8c00, #f57c00);
     box-shadow: 0 4px 12px rgba(251, 140, 0, 0.3) !important;
+}
+
+/* Cart pill di appbar */
+.cart-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 100px;
+    padding: 4px 10px 4px 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 4px;
+}
+
+.cart-pill .var-icon {
+    color: #ffffff;
+}
+
+.cart-pill-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.cart-pill-total {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* Popup mini-cart */
+.cart-sheet {
+    background: #ffffff;
+    border-radius: 20px 20px 0 0;
+    padding: 16px 20px 24px;
+    max-height: 75vh;
+    overflow-y: auto;
+}
+
+.cart-sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.cart-sheet-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.cart-empty {
+    text-align: center;
+    padding: 24px;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.cart-line-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.cart-line-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cart-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+    gap: 10px;
+}
+
+.cart-line-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.cart-line-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.cart-line-price {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.cart-line-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.cart-line-subtotal {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f57c00;
+    margin-right: 6px;
+}
+
+.cart-line-actions .qty-btn {
+    color: #fb8c00;
+    background: #fdf0ea;
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    padding: 0;
+}
+
+.cart-line-actions .qty-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    min-width: 16px;
+    text-align: center;
+}
+
+.cart-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0 8px;
+}
+
+.cart-total-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.cart-total-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #f57c00;
+}
+
+.cart-checkout-btn {
+    margin-top: 8px;
+    background: linear-gradient(135deg, #fb8c00, #f57c00);
+    color: #ffffff;
+    border-radius: 100px;
+    font-weight: 700;
 }
 </style>

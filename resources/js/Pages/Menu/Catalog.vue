@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import AppLayout from '../../Layouts/AppLayout.vue';
-import { addToCart, setQty, cart, cartCount, cartTotal, outletId } from '../../composables/cart';
+import { addToCart, setQty, cart, outletId } from '../../composables/cart';
 
 defineOptions({ layout: AppLayout });
 
@@ -29,8 +29,6 @@ onMounted(() => { outletId.value = props.active_outlet; });
 const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
 
 const qtyOf = (itemId: number) => cart.value[itemId]?.qty ?? 0;
-
-const goCheckout = () => router.get(route('checkout'));
 
 const switchOutlet = (id: number) => {
     if (id === props.active_outlet) return;
@@ -103,14 +101,6 @@ const closePhotoViewer = () => { showPhotoViewer.value = false; };
                 </div>
             </div>
         </section>
-
-        <div v-if="cartCount > 0" class="cart-bar">
-            <div class="cart-summary">
-                <span class="cart-count">{{ cartCount }} item</span>
-                <span class="cart-total">{{ rupiah(cartTotal) }}</span>
-            </div>
-            <var-button class="cart-checkout" @click="goCheckout">Checkout</var-button>
-        </div>
 
         <!-- Photo Viewer Overlay -->
         <Transition name="fade">
@@ -268,43 +258,6 @@ const closePhotoViewer = () => { showPhotoViewer.value = false; };
     width: 34px;
     height: 34px;
     padding: 0;
-}
-
-.cart-bar {
-    position: sticky;
-    bottom: 0;
-    background: #ffffff;
-    border: 1px solid #f1f5f9;
-    border-radius: 16px;
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
-    margin-top: 4px;
-}
-
-.cart-summary {
-    display: flex;
-    flex-direction: column;
-}
-
-.cart-count {
-    font-size: 12px;
-    color: #64748b;
-}
-
-.cart-total {
-    font-size: 16px;
-    font-weight: 800;
-    color: #f57c00;
-}
-
-.cart-checkout {
-    background: linear-gradient(135deg, #fb8c00, #f57c00);
-    color: #ffffff;
-    border-radius: 100px;
-    font-weight: 700;
 }
 
 /* Photo viewer overlay */
