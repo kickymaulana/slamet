@@ -5,6 +5,7 @@ export interface AuthUser {
     name: string;
     email: string;
     balance: number;
+    outlet_id: number | null;
     roles: string[];
     permissions: string[];
 }

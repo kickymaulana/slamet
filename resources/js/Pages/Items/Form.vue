@@ -11,11 +11,12 @@ const props = defineProps<{
     item: Record<string, any> | null;
     categories: Array<{ id: number; name: string }>;
     outlets: Array<{ id: number; name: string }>;
+    bound_outlet: number | null;
 }>();
 
 const isEditing = !!props.item;
 const form = reactive<Record<string, any>>({
-    outlet_id: props.item?.outlet_id ?? props.outlets[0]?.id ?? '',
+    outlet_id: props.bound_outlet ?? props.item?.outlet_id ?? props.outlets[0]?.id ?? '',
     category_id: props.item?.category_id ?? '',
     name: props.item?.name ?? '',
     description: props.item?.description ?? '',
@@ -123,21 +124,25 @@ const remove = () => {
 
 <template>
     <div class="white-card">
+        <h2 class="page-title">{{ isEditing ? 'Edit Menu' : 'Tambah Menu' }}</h2>
         <var-space direction="column" size="small">
             <var-select
+                v-if="!bound_outlet"
                 v-model="form.outlet_id"
                 label="Kantin"
+                placeholder="Pilih kantin"
                 :options="outlets.map((o) => ({ label: o.name, value: o.id }))"
             />
             <var-select
                 v-model="form.category_id"
                 label="Kategori"
+                placeholder="Pilih kategori"
                 :options="categories.map((c) => ({ label: c.name, value: c.id }))"
             />
-            <var-input v-model="form.name" label="Nama Menu" />
-            <var-input v-model="form.description" label="Deskripsi" :textarea="true" />
-            <var-input v-model="form.price" label="Harga (Coin)" type="number" />
-            <var-input v-model="form.stock" label="Stok" type="number" />
+            <var-input v-model="form.name" label="Nama Menu" placeholder="Nama menu" />
+            <var-input v-model="form.description" label="Deskripsi" placeholder="Deskripsi (opsional)" :textarea="true" />
+            <var-input v-model="form.price" label="Harga (Coin)" type="number" placeholder="Harga" />
+            <var-input v-model="form.stock" label="Stok" type="number" placeholder="Stok" />
 
             <div class="field-row">
                 <label class="field-label">Foto {{ photoLoading ? '(memproses...)' : '' }}</label>

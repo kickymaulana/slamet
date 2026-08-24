@@ -12,7 +12,7 @@ class ReportController extends Controller
     {
         $from = request('from', today()->startOfMonth()->toDateString());
         $to = request('to', today()->toDateString());
-        $outletId = request('outlet') ? (int) request('outlet') : null;
+        $outletId = auth()->user()->outlet_id ?? (request('outlet') ? (int) request('outlet') : null);
 
         $scope = Order::query()
             ->whereDate('created_at', '>=', $from)

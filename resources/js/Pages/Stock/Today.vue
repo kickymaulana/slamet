@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { reactive, ref, computed } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import { Snackbar } from '@varlet/ui';
 import AppLayout from '../../Layouts/AppLayout.vue';
 
 defineOptions({ layout: AppLayout });
+
+const page = usePage();
+const boundOutlet = computed(() => page.props.auth?.user?.outlet_id ?? null);
 
 const props = defineProps<{
     items: Array<{
@@ -49,7 +52,7 @@ const save = () => {
 
 <template>
     <div class="stock">
-        <div v-if="outlets.length > 1" class="outlet-tabs">
+        <div v-if="!boundOutlet && outlets.length > 1" class="outlet-tabs">
             <div
                 v-for="o in outlets"
                 :key="o.id"

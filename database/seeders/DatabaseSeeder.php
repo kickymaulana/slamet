@@ -14,40 +14,52 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RolesAndPermissionsSeeder::class);
 
-        $admin = User::create([
-            'name' => 'Admin Kantin',
-            'email' => 'admin@slamet.test',
-            'password' => 'password',
-            'nik' => 'KD220004',
-            'is_approved' => true,
-            'balance' => 100000,
-        ]);
-        $admin->assignRole('admin');
+        $outlets = collect([
+            ['name' => 'Kantin 1'],
+            ['name' => 'Kantin 2'],
+        ])->map(fn ($o) => Outlet::create($o));
 
-        $kasir = User::create([
-            'name' => 'Kasir Kantin',
-            'email' => 'kasir@slamet.test',
+        $admin = User::create([
+            'name' => 'Kicky Maulana',
+            'email' => 'admin@slamet.test',
             'password' => 'password',
             'nik' => 'D260065',
             'is_approved' => true,
             'balance' => 100000,
         ]);
-        $kasir->assignRole('kasir');
+        $admin->assignRole('admin');
 
-        $karyawan = User::create([
-            'name' => 'Karyawan Contoh',
-            'email' => 'karyawan@slamet.test',
+        $kasir1 = User::create([
+            'name' => 'Dedi Maulana',
+            'email' => 'kasir@slamet.test',
             'password' => 'password',
             'nik' => 'K190327',
             'is_approved' => true,
             'balance' => 100000,
+            'outlet_id' => $outlets[0]->id, // Kantin 1
+        ]);
+        $kasir1->assignRole('kasir');
+
+        $kasir2 = User::create([
+            'name' => 'Yildiz Zulhamdy',
+            'email' => 'kasir2@slamet.test',
+            'password' => 'password',
+            'nik' => 'D240728',
+            'is_approved' => true,
+            'balance' => 100000,
+            'outlet_id' => $outlets[1]->id, // Kantin 2
+        ]);
+        $kasir2->assignRole('kasir');
+
+        $karyawan = User::create([
+            'name' => 'Elfrina',
+            'email' => 'karyawan@slamet.test',
+            'password' => 'password',
+            'nik' => 'K190798',
+            'is_approved' => true,
+            'balance' => 100000,
         ]);
         $karyawan->assignRole('karyawan');
-
-        $outlets = collect([
-            ['name' => 'Kantin 1'],
-            ['name' => 'Kantin 2'],
-        ])->map(fn ($o) => Outlet::create($o));
 
         $categories = collect([
             ['name' => 'Nasi', 'sort_order' => 1],

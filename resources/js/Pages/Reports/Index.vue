@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import AppLayout from '../../Layouts/AppLayout.vue';
 
 defineOptions({ layout: AppLayout });
+
+const page = usePage();
+const boundOutlet = computed(() => page.props.auth?.user?.outlet_id ?? null);
 
 const props = defineProps<{
     orders: {
@@ -53,7 +56,7 @@ const applyFilter = () => {
                     <label class="date-label">Sampai</label>
                     <input v-model="to" type="date" class="date-input" />
                 </div>
-                <div class="date-row">
+                <div v-if="!boundOutlet" class="date-row">
                     <label class="date-label">Kantin</label>
                     <select v-model="outlet" class="date-input">
                         <option value="">Semua</option>

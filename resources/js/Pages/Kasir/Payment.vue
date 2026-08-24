@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { ref, watch, computed } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import { Dialog, Snackbar } from '@varlet/ui';
 import AppLayout from '../../Layouts/AppLayout.vue';
 import { searchState } from '../../composables/search';
 
 defineOptions({ layout: AppLayout });
+
+const page = usePage();
+const boundOutlet = computed(() => page.props.auth?.user?.outlet_id ?? null);
 
 const props = defineProps<{
     orders: {
@@ -64,7 +67,7 @@ const confirmPay = (order: any) => {
 
 <template>
     <div class="kasir">
-        <div v-if="outlets.length > 1" class="outlet-tabs">
+        <div v-if="!boundOutlet && outlets.length > 1" class="outlet-tabs">
             <div
                 v-for="o in outlets"
                 :key="o.id"

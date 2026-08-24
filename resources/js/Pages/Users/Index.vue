@@ -17,22 +17,27 @@ const props = defineProps<{
         total: number;
     };
     roles: string[];
+    outlets: Array<{ id: number; name: string }>;
 }>();
 
 const roleSel = reactive<Record<number, string>>({});
+const outletSel = reactive<Record<number, string>>({});
 props.users.data.forEach((u) => {
     roleSel[u.id] = (u.requested_role ?? u.roles?.[0]?.name) ?? 'karyawan';
+    outletSel[u.id] = u.outlet_id ? String(u.outlet_id) : '';
 });
 
+const outletOptions = props.outlets.map((o) => ({ label: o.name, value: String(o.id) }));
+
 const approve = (u: any) => {
-    router.post(route('users.approve', { user: u.id }), { role: roleSel[u.id] }, {
+    router.post(route('users.approve', { user: u.id }), { role: roleSel[u.id], outlet_id: outletSel[u.id] }, {
         preserveScroll: true,
         onError: () => Snackbar.error('Gagal menyetujui user.'),
     });
 };
 
 const changeRole = (u: any) => {
-    router.post(route('users.role', { user: u.id }), { role: roleSel[u.id] }, {
+    router.post(route('users.role', { user: u.id }), { role: roleSel[u.id], outlet_id: outletSel[u.id] }, {
         preserveScroll: true,
         onError: () => Snackbar.error('Gagal mengubah role.'),
     });
@@ -73,12 +78,20 @@ const activeUsers = props.users.data.filter((u) => u.is_approved);
             <var-chip type="warning" size="mini" round>MENUNGGU</var-chip>
         </div>
         <div class="user-actions">
-            <var-select
-                v-model="roleSel[u.id]"
-                placeholder="Role"
-                size="small"
-                :options="roles.map((r) => ({ label: r, value: r }))"
-            />
+            <div class="selects">
+                <var-select
+                    v-model="roleSel[u.id]"
+                    placeholder="Role"
+                    size="small"
+                    :options="roles.map((r) => ({ label: r, value: r }))"
+                />
+                <var-select
+                    v-model="outletSel[u.id]"
+                    placeholder="Kantin"
+                    size="small"
+                    :options="outletOptions"
+                />
+            </div>
             <var-button type="primary" size="small" @click="approve(u)">Setujui</var-button>
         </div>
     </div>
@@ -94,14 +107,24 @@ const activeUsers = props.users.data.filter((u) => u.is_approved);
             <var-chip type="success" size="mini" round>{{ u.roles?.[0]?.name ?? '—' }}</var-chip>
         </div>
         <div class="user-actions">
-            <var-select
-                v-model="roleSel[u.id]"
-                placeholder="Role"
-                size="small"
-                :options="roles.map((r) => ({ label: r, value: r }))"
-            />
-            <var-button size="small" text @click="changeRole(u)">Ubah Role</var-button>
-            <var-button size="small" text type="danger" @click="deactivate(u)">Nonaktifkan</var-button>
+            <div class="selects">
+                <var-select
+                    v-model="roleSel[u.id]"
+                    placeholder="Role"
+                    size="small"
+                    :options="roles.map((r) => ({ label: r, value: r }))"
+                />
+                <var-select
+                    v-model="outletSel[u.id]"
+                    placeholder="Kantin"
+                    size="small"
+                    :options="outletOptions"
+                />
+            </div>
+            <div class="act-btns">
+                <var-button size="small" text @click="changeRole(u)">Ubah Role</var-button>
+                <var-button size="small" text type="danger" @click="deactivate(u)">Nonaktifkan</var-button>
+            </div>
         </div>
     </div>
 
@@ -183,6 +206,19 @@ const activeUsers = props.users.data.filter((u) => u.is_approved);
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.selects {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 130px;
+}
+
+.act-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .pagination {

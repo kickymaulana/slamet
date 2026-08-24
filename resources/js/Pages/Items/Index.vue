@@ -82,6 +82,15 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
             <div v-for="i in filteredItems" :key="i.id" class="row-card">
                 <Link :href="route('items.edit', { item: i.id })" class="row-link">
+                    <div class="item-photo">
+                        <img
+                            v-if="i.photo"
+                            :src="route('items.foto', { item: i.id })"
+                            :alt="i.name"
+                            loading="lazy"
+                        />
+                        <var-icon v-else name="image-outline" :size="22" color="#cbd5e1" />
+                    </div>
                     <div class="row-info">
                         <span class="name">{{ i.name }}</span>
                         <span class="meta">
@@ -114,9 +123,29 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 .row-link {
     display: flex;
     align-items: center;
+    gap: 12px;
     padding: 12px 14px;
     text-decoration: none;
     color: inherit;
+}
+
+.item-photo {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.item-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .row-info {

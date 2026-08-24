@@ -37,9 +37,23 @@ class ItemController extends Controller
         ]);
     }
 
+    private function boundOutlet(): ?int
+    {
+        return auth()->user()->outlet_id;
+    }
+
+    private function assertOwnOutlet(Item $item): void
+    {
+        abort_if($this->boundOutlet() && $item->outlet_id !== $this->boundOutlet(), 403, 'Bukan menu kantin Anda.');
+    }
+
     public function index()
     {
         $query = Item::with('category', 'outlet');
+
+        if ($this->boundOutlet()) {
+            $query->where('outlet_id', $this->boundOutlet());
+        }
 
         if ($search = request('search')) {
             $query->where(function ($q) use ($search) {
@@ -62,22 +76,26 @@ class ItemController extends Controller
             'item' => null,
             'categories' => Category::orderBy('sort_order')->orderBy('name')->get(['id', 'name']),
             'outlets' => Outlet::orderBy('id')->get(['id', 'name']),
+            'bound_outlet' => $this->boundOutlet(),
         ]);
     }
 
     public function edit(Item $item)
     {
+        $this->assertOwnOutlet($item);
+
         return Inertia::render('Items/Form', [
             'item' => $item->load('category'),
             'categories' => Category::orderBy('sort_order')->orderBy('name')->get(['id', 'name']),
             'outlets' => Outlet::orderBy('id')->get(['id', 'name']),
+            'bound_outlet' => $this->boundOutlet(),
         ]);
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'outlet_id' => 'required|exists:outlets,id',
+            'outlet_id' => $this->boundOutlet() ? 'nullable' : 'required|exists:outlets,id',
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -86,6 +104,8 @@ class ItemController extends Controller
             'stock_date' => 'nullable|date',
             'is_active' => 'boolean',
         ]);
+
+        $data['outlet_id'] = $this->boundOutlet() ?? $data['outlet_id'];
 
         if ($request->hasFile('photo')) {
             $data['photo'] = $this->storePhoto($request);
@@ -99,8 +119,10 @@ class ItemController extends Controller
 
     public function update(Request $request, Item $item)
     {
+        $this->assertOwnOutlet($item);
+
         $data = $request->validate([
-            'outlet_id' => 'required|exists:outlets,id',
+            'outlet_id' => $this->boundOutlet() ? 'nullable' : 'required|exists:outlets,id',
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -109,6 +131,8 @@ class ItemController extends Controller
             'stock_date' => 'nullable|date',
             'is_active' => 'boolean',
         ]);
+
+        $data['outlet_id'] = $this->boundOutlet() ?? $data['outlet_id'];
 
         if ($request->hasFile('photo')) {
             if ($item->photo) {
@@ -125,6 +149,8 @@ class ItemController extends Controller
 
     public function destroy(Item $item)
     {
+        $this->assertOwnOutlet($item);
+
         if ($item->photo) {
             Storage::disk('minio')->delete($item->photo);
         }

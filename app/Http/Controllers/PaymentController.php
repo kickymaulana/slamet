@@ -12,14 +12,15 @@ class PaymentController extends Controller
 {
     public function index()
     {
-        $outletId = (int) request('outlet', Outlet::where('is_active', true)->orderBy('id')->value('id') ?? 1);
+        $user = auth()->user();
+        $outletId = $user->outlet_id ?? (int) request('outlet', Outlet::where('is_active', true)->orderBy('id')->value('id') ?? 1);
         $query = Order::with('user', 'items')->where('outlet_id', $outletId);
 
         if ($q = request('q')) {
             $query->where('nota_code', 'like', "%{$q}%");
         } else {
             $query->whereDate('created_at', today())
-                ->orderByRaw("FIELD(status, 'pending', 'paid', 'cancelled')")
+                ->orderByRaw("CASE status WHEN 'pending' THEN 1 WHEN 'paid' THEN 2 ELSE 3 END")
                 ->orderBy('created_at', 'desc');
         }
 
@@ -35,6 +36,9 @@ class PaymentController extends Controller
 
     public function pay(Order $order, Request $request)
     {
+        $user = auth()->user();
+        abort_if($user->outlet_id && $order->outlet_id !== $user->outlet_id, 403, 'Bukan pesanan kantin Anda.');
+
         DB::transaction(function () use ($order) {
             $order->lockForUpdate();
             abort_if($order->status !== Order::STATUS_PENDING, 422);

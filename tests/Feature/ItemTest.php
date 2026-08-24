@@ -30,6 +30,27 @@ class ItemTest extends TestCase
         return $user;
     }
 
+    private function kasir(Outlet $outlet): User
+    {
+        $user = User::factory()->create(['is_approved' => true, 'outlet_id' => $outlet->id]);
+        $user->assignRole('kasir');
+
+        return $user;
+    }
+
+    private function makeItem(Outlet $outlet, string $name = 'Soto'): Item
+    {
+        $category = Category::create(['name' => 'Kategori-'.uniqid()]);
+
+        return Item::create([
+            'outlet_id' => $outlet->id,
+            'category_id' => $category->id,
+            'name' => $name,
+            'price' => 9000,
+            'stock' => 5,
+        ]);
+    }
+
     public function test_item_photo_uploaded_to_minio(): void
     {
         Storage::fake('minio');
@@ -121,5 +142,54 @@ class ItemTest extends TestCase
 
         Storage::disk('minio')->assertMissing('items/hapus.jpg');
         $this->assertSoftDeleted('items', ['id' => $item->id]);
+    }
+
+    public function test_kasir_index_scoped_to_bound_outlet(): void
+    {
+        $outlet1 = Outlet::create(['name' => 'Kantin 1']);
+        $outlet2 = Outlet::create(['name' => 'Kantin 2']);
+        $this->makeItem($outlet1, 'Ayam Kantin1');
+        $this->makeItem($outlet2, 'Ikan Kantin2');
+        $kasir = $this->kasir($outlet1);
+
+        $page = $this->actingAs($kasir)->get('/items')->assertOk();
+        $page->assertSee('Ayam Kantin1');
+        $page->assertDontSee('Ikan Kantin2');
+    }
+
+    public function test_kasir_store_forces_own_outlet(): void
+    {
+        $outlet1 = Outlet::create(['name' => 'Kantin 1']);
+        $outlet2 = Outlet::create(['name' => 'Kantin 2']);
+        $category = Category::create(['name' => 'Makanan']);
+        $kasir = $this->kasir($outlet1);
+
+        $this->actingAs($kasir)->post('/items', [
+            'outlet_id' => $outlet2->id, // dicoba ke kantin lain → dipaksa kantin 1
+            'category_id' => $category->id,
+            'name' => 'Rendang',
+            'price' => 12000,
+            'stock' => 5,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('items', ['name' => 'Rendang', 'outlet_id' => $outlet1->id]);
+    }
+
+    public function test_kasir_cannot_edit_or_delete_other_outlet_item(): void
+    {
+        $outlet1 = Outlet::create(['name' => 'Kantin 1']);
+        $outlet2 = Outlet::create(['name' => 'Kantin 2']);
+        $item = $this->makeItem($outlet2);
+        $kasir = $this->kasir($outlet1);
+
+        $this->actingAs($kasir)->get("/items/{$item->id}/edit")->assertForbidden();
+        $this->actingAs($kasir)->put("/items/{$item->id}", [
+            'category_id' => $item->category_id,
+            'name' => 'Ubah',
+            'price' => 1000,
+            'stock' => 1,
+        ])->assertForbidden();
+        $this->actingAs($kasir)->delete("/items/{$item->id}")->assertForbidden();
+        $this->assertDatabaseHas('items', ['id' => $item->id]);
     }
 }

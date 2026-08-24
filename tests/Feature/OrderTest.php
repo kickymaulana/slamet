@@ -30,9 +30,9 @@ class OrderTest extends TestCase
         return $user;
     }
 
-    private function kasir(int $balance = 100000): User
+    private function kasir(int $balance = 100000, ?Outlet $outlet = null): User
     {
-        $user = User::factory()->create(['is_approved' => true, 'balance' => $balance]);
+        $user = User::factory()->create(['is_approved' => true, 'balance' => $balance, 'outlet_id' => $outlet?->id]);
         $user->assignRole('kasir');
 
         return $user;
@@ -230,5 +230,40 @@ class OrderTest extends TestCase
         $item = $this->makeItem(10);
         $this->actingAs($other)->post('/orders', $this->orderPayload($item, 1));
         $this->actingAs($this->karyawan())->get('/orders')->assertOk();
+    }
+
+    public function test_kasir_index_scoped_to_bound_outlet(): void
+    {
+        $outlet1 = $this->outlet('Kantin 1');
+        $outlet2 = $this->outlet('Kantin 2');
+        $item1 = $this->makeItem(5, null, $outlet1);
+        $item2 = $this->makeItem(5, null, $outlet2);
+        $kasir1 = $this->kasir(100000, $outlet1);
+
+        $this->actingAs($this->karyawan())->post('/orders', $this->orderPayload($item1, 1, $outlet1));
+        $this->actingAs($this->karyawan())->post('/orders', $this->orderPayload($item2, 1, $outlet2));
+
+        $page = $this->actingAs($kasir1)->withHeaders(['X-Inertia' => 'true', 'X-Inertia-Version' => Inertia::getVersion()])
+            ->get('/kasir')
+            ->assertOk();
+
+        $data = json_decode($page->getContent(), true)['props']['orders']['data'];
+        $this->assertCount(1, $data);
+        $this->assertSame($outlet1->id, $data[0]['outlet_id']);
+        $this->assertSame($outlet1->id, json_decode($page->getContent(), true)['props']['auth']['user']['outlet_id']);
+    }
+
+    public function test_kasir_pay_blocked_for_other_outlet(): void
+    {
+        $outlet1 = $this->outlet('Kantin 1');
+        $outlet2 = $this->outlet('Kantin 2');
+        $item2 = $this->makeItem(5, null, $outlet2);
+        $kasir1 = $this->kasir(100000, $outlet1);
+
+        $this->actingAs($this->karyawan())->post('/orders', $this->orderPayload($item2, 1, $outlet2));
+        $order = Order::firstOrFail();
+
+        $this->actingAs($kasir1)->post("/kasir/{$order->id}/pay")->assertForbidden();
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => Order::STATUS_PENDING]);
     }
 }
