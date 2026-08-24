@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
+import { Dialog } from '@varlet/ui';
 import AppLayout from '../../Layouts/AppLayout.vue';
-import { addToCart, setQty, cart, outletId } from '../../composables/cart';
+import { addToCart, setQty, cart, cartCount, clearCart, outletId } from '../../composables/cart';
 
 defineOptions({ layout: AppLayout });
 
@@ -24,16 +25,51 @@ const props = defineProps<{
     active_outlet: number;
 }>();
 
+const outletSel = ref(props.active_outlet);
+watch(() => props.active_outlet, (v) => { outletSel.value = v; });
+
+const searchQuery = ref('');
+
 onMounted(() => { outletId.value = props.active_outlet; });
 
 const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
 
 const qtyOf = (itemId: number) => cart.value[itemId]?.qty ?? 0;
 
-const switchOutlet = (id: number) => {
-    if (id === props.active_outlet) return;
+const outletName = (id: number) => props.outlets.find((o) => o.id === id)?.name ?? 'Kantin';
+
+const doSwitch = (id: number) => {
+    clearCart();
+    outletId.value = id;
+    searchQuery.value = '';
     router.get(route('menu.catalog', { outlet: id }), {}, { preserveState: false });
 };
+
+const switchOutlet = (id: number) => {
+    if (id === props.active_outlet) return;
+    if (cartCount.value > 0) {
+        Dialog({
+            title: 'Ganti Kantin',
+            message: `Keranjang berisi menu ${outletName(props.active_outlet)}. Ganti ke ${outletName(id)} akan mengosongkan keranjang.`,
+            confirmButtonText: 'Ya, Kosongkan',
+            cancelButtonText: 'Batal',
+            onConfirm: () => doSwitch(id),
+        });
+    } else {
+        doSwitch(id);
+    }
+};
+
+const filteredCategories = computed(() => {
+    const q = searchQuery.value.trim().toLowerCase();
+    if (!q) return props.categories;
+    return props.categories
+        .map((c) => ({
+            ...c,
+            items: c.items.filter((i) => i.name.toLowerCase().includes(q)),
+        }))
+        .filter((c) => c.items.length > 0);
+});
 
 const showPhotoViewer = ref(false);
 const currentPhotoUrl = ref('');
@@ -50,21 +86,30 @@ const closePhotoViewer = () => { showPhotoViewer.value = false; };
 
 <template>
     <div class="catalog">
-        <div v-if="outlets.length > 1" class="outlet-tabs">
-            <div
-                v-for="o in outlets"
-                :key="o.id"
-                class="outlet-tab"
-                :class="{ active: o.id === active_outlet }"
-                @click="switchOutlet(o.id)"
+        <div class="catalog-controls">
+            <var-select
+                v-model="outletSel"
+                class="outlet-select"
+                :options="outlets.map((o) => ({ label: o.name, value: o.id }))"
+                @change="switchOutlet(outletSel)"
+            />
+            <var-input
+                v-model="searchQuery"
+                placeholder="Cari menu..."
+                clearable
+                class="search-box"
             >
-                {{ o.name }}
-            </div>
+                <template #prepend-icon>
+                    <var-icon name="magnify" :size="18" color="#94a3b8" />
+                </template>
+            </var-input>
         </div>
 
-        <div v-if="categories.length === 0" class="empty">Belum ada menu tersedia hari ini.</div>
+        <div v-if="filteredCategories.length === 0" class="empty">
+            {{ searchQuery ? 'Menu tidak ditemukan.' : 'Belum ada menu tersedia hari ini.' }}
+        </div>
 
-        <section v-for="cat in categories" :key="cat.id" class="category">
+        <section v-for="cat in filteredCategories" :key="cat.id" class="category">
             <h3 class="category-title">{{ cat.name }}</h3>
             <div v-if="cat.items.length === 0" class="empty-small">Kosong hari ini.</div>
             <div v-for="item in cat.items" :key="item.id" class="item-card">
@@ -120,27 +165,19 @@ const closePhotoViewer = () => { showPhotoViewer.value = false; };
     padding-bottom: 12px;
 }
 
-.outlet-tabs {
+.catalog-controls {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
 }
 
-.outlet-tab {
-    padding: 8px 18px;
-    border-radius: 100px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    font-size: 13px;
-    font-weight: 700;
-    color: #64748b;
-    cursor: pointer;
+.outlet-select {
+    width: 130px;
+    flex-shrink: 0;
 }
 
-.outlet-tab.active {
-    background: linear-gradient(135deg, #fb8c00, #f57c00);
-    border-color: transparent;
-    color: #ffffff;
+.search-box {
+    flex: 1;
 }
 
 .empty {
