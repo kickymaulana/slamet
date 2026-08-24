@@ -71,6 +71,12 @@ Route::middleware('auth')->group(function () {
     // Kasir
     Route::get('/kasir', [PaymentController::class, 'index'])->name('kasir.index')
         ->middleware('permission:payment.manage');
+    Route::get('/kasir/saldo', [PaymentController::class, 'saldo'])->name('kasir.saldo')
+        ->middleware('permission:payment.manage');
+    Route::get('/kasir/user', [PaymentController::class, 'userByNik'])->name('kasir.user')
+        ->middleware('permission:payment.manage');
+    Route::post('/kasir/topup', [PaymentController::class, 'topUp'])->name('kasir.topup')
+        ->middleware('permission:payment.manage');
     Route::post('/kasir/{order}/pay', [PaymentController::class, 'pay'])->name('kasir.pay')
         ->middleware('permission:payment.manage');
 

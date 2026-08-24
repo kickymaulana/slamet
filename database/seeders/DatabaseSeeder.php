@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Item;
 use App\Models\Outlet;
 use App\Models\User;
+use App\Models\UserBalance;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -25,7 +26,6 @@ class DatabaseSeeder extends Seeder
             'password' => 'password',
             'nik' => 'D260065',
             'is_approved' => true,
-            'balance' => 100000,
         ]);
         $admin->assignRole('admin');
 
@@ -35,7 +35,6 @@ class DatabaseSeeder extends Seeder
             'password' => 'password',
             'nik' => 'K190327',
             'is_approved' => true,
-            'balance' => 100000,
             'outlet_id' => $outlets[0]->id, // Kantin 1
         ]);
         $kasir1->assignRole('kasir');
@@ -46,7 +45,6 @@ class DatabaseSeeder extends Seeder
             'password' => 'password',
             'nik' => 'D240728',
             'is_approved' => true,
-            'balance' => 100000,
             'outlet_id' => $outlets[1]->id, // Kantin 2
         ]);
         $kasir2->assignRole('kasir');
@@ -57,9 +55,13 @@ class DatabaseSeeder extends Seeder
             'password' => 'password',
             'nik' => 'K190798',
             'is_approved' => true,
-            'balance' => 100000,
         ]);
         $karyawan->assignRole('karyawan');
+
+        // Saldo awal: Kantin 1 = 100.000, Kantin 2 = 0
+        foreach ([$admin, $kasir1, $kasir2, $karyawan] as $u) {
+            UserBalance::create(['user_id' => $u->id, 'outlet_id' => $outlets[0]->id, 'balance' => 100000]);
+        }
 
         $categories = collect([
             ['name' => 'Nasi', 'sort_order' => 1],

@@ -63,10 +63,11 @@ const remove = () => {
     <div class="white-card">
         <var-space direction="column" size="small">
             <template v-for="f in config.fields" :key="f.key">
+                <label v-if="f.type !== 'switch'" class="form-label">{{ f.label }}</label>
                 <var-select
                     v-if="f.type === 'select'"
                     v-model="form[f.key]"
-                    :label="f.label"
+                    placeholder="Pilih"
                     :options="fieldOptions(f.options ?? '')"
                 />
                 <div v-else-if="f.type === 'switch'" class="switch-row">
@@ -76,8 +77,8 @@ const remove = () => {
                 <var-input
                     v-else
                     v-model="form[f.key]"
-                    :label="f.label"
                     :type="f.type === 'number' ? 'number' : 'text'"
+                    :placeholder="f.label"
                     :step="f.step"
                 />
             </template>

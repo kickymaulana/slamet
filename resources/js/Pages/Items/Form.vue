@@ -126,23 +126,27 @@ const remove = () => {
     <div class="white-card">
         <h2 class="page-title">{{ isEditing ? 'Edit Menu' : 'Tambah Menu' }}</h2>
         <var-space direction="column" size="small">
+            <label v-if="!bound_outlet" class="form-label">Kantin</label>
             <var-select
                 v-if="!bound_outlet"
                 v-model="form.outlet_id"
-                label="Kantin"
                 placeholder="Pilih kantin"
                 :options="outlets.map((o) => ({ label: o.name, value: o.id }))"
             />
+            <label class="form-label">Kategori</label>
             <var-select
                 v-model="form.category_id"
-                label="Kategori"
                 placeholder="Pilih kategori"
                 :options="categories.map((c) => ({ label: c.name, value: c.id }))"
             />
-            <var-input v-model="form.name" label="Nama Menu" placeholder="Nama menu" />
-            <var-input v-model="form.description" label="Deskripsi" placeholder="Deskripsi (opsional)" :textarea="true" />
-            <var-input v-model="form.price" label="Harga (Coin)" type="number" placeholder="Harga" />
-            <var-input v-model="form.stock" label="Stok" type="number" placeholder="Stok" />
+            <label class="form-label">Nama Menu</label>
+            <var-input v-model="form.name" placeholder="Contoh: Ayam Bakar" />
+            <label class="form-label">Deskripsi (opsional)</label>
+            <var-input v-model="form.description" :textarea="true" placeholder="Bahan & keterangan" />
+            <label class="form-label">Harga (Coin)</label>
+            <var-input v-model="form.price" type="number" placeholder="Contoh: 8000" />
+            <label class="form-label">Stok</label>
+            <var-input v-model="form.stock" type="number" placeholder="Contoh: 40" />
 
             <div class="field-row">
                 <label class="field-label">Foto {{ photoLoading ? '(memproses...)' : '' }}</label>

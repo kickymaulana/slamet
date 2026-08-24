@@ -33,6 +33,7 @@ const pageTitle = computed(() => {
     if (current === 'orders.index') return 'Pesanan Saya';
     if (current === 'orders.show') return 'Detail Pesanan';
     if (current === 'kasir.index') return 'Kasir Kantin';
+    if (current === 'kasir.saldo') return 'Isi Saldo';
     if (current === 'reports.index') return 'Laporan';
     if (current === 'items.index') return 'Kelola Menu';
     if (current === 'items.create') return 'Tambah Menu';
@@ -98,7 +99,10 @@ const activeIndex = ref(0);
 
 const syncActive = () => {
     const current = route().current();
-    const idx = navItems.value.findIndex((i) => (current ?? '') === i.name);
+    const idx = navItems.value.findIndex((i) => {
+        if (i.name === 'kasir.index') return (current ?? '').startsWith('kasir.');
+        return (current ?? '') === i.name;
+    });
     activeIndex.value = idx >= 0 ? idx : 0;
 };
 
@@ -119,6 +123,8 @@ const goBack = () => {
     const current = route().current() ?? '';
     if (current === 'checkout') {
         router.get(route('menu.catalog'));
+    } else if (current.startsWith('kasir.')) {
+        router.get(route('kasir.index'));
     } else if (current.startsWith('items.')) {
         router.get(route('items.index'));
     } else if (current === 'orders.show') {

@@ -43,6 +43,7 @@ SLAMET — Sistem Laporan & Antrean Makan Enak Teratur. Pemesanan makan kantin m
 ## Business rules
 - Stok harian per `items.stock_date`; katalog = is_active + stock_date=today + stock>0 + outlet aktif. `Item::availableToday()` (cek `stock_date` Carbon → bandingkan format Y-m-d, jangan `===` string).
 - Checkout = transaction + `lockForUpdate` per item, stok auto-deduct, order_items snapshot nama/harga. `items.*.outlet_id` harus = `outlet_id` order. Nota `SLM-YYYYMMDD-NNNN`. Nasi gratis = item harga 0 di kategori Nasi.
+- **Saldo per kantin**: `user_balances` (user_id+outlet_id unique, balance). Bukan kolom di users. Checkout cek saldo di kantin order; kasir pay deduksi + catat `balance_transactions` (topup/deduction). Kasir terikat kantin bisa isi saldo hanya kantinnya (`/kasir/topup`, `UserBalance::credit`, kasir_id tercatat).
 - Kasir: pay hanya status pending → paid + paid_at + paid_by. Redirect balik eksplisit `kasir.index` + q + outlet (jangan `back()`).
 
 ## Gotchas

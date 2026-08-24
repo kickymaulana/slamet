@@ -4,8 +4,8 @@ export interface AuthUser {
     id: number;
     name: string;
     email: string;
-    balance: number;
     outlet_id: number | null;
+    balances: Array<{ outlet_id: number; name: string; balance: number }>;
     roles: string[];
     permissions: string[];
 }

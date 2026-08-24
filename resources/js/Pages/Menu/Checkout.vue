@@ -13,7 +13,10 @@ const form = reactive({ notes: '' });
 const saving = ref(false);
 
 const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
-const balance = computed(() => page.props.auth?.user?.balance ?? 0);
+const balance = computed(() => {
+    const entry = (page.props.auth?.user?.balances ?? []).find((b) => b.outlet_id === outletId.value);
+    return entry?.balance ?? 0;
+});
 const insufficient = computed(() => balance.value < cartTotal.value);
 const canSubmit = computed(() => cartLines.value.length > 0 && !insufficient.value);
 
@@ -69,9 +72,9 @@ const submit = () => {
             </div>
 
             <div class="white-card">
+                <label class="form-label">Catatan (opsional)</label>
                 <var-input
                     v-model="form.notes"
-                    label="Catatan (opsional)"
                     placeholder="Contoh: tidak pedas, porsi tambah..."
                 />
             </div>

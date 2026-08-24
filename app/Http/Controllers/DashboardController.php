@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BalanceTransaction;
 use App\Models\Item;
 use App\Models\Order;
 use Inertia\Inertia;
@@ -25,9 +26,16 @@ class DashboardController extends Controller
             ->limit(5)
             ->get(['id', 'nota_code', 'user_id', 'outlet_id', 'total_amount', 'status', 'created_at']);
 
+        $balanceTransactions = BalanceTransaction::with('outlet', 'kasir')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->limit(10)
+            ->get();
+
         return Inertia::render('Dashboard', [
             'stats' => $stats,
             'recentOrders' => $recentOrders,
+            'balanceTransactions' => $balanceTransactions,
         ]);
     }
 }

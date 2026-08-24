@@ -46,8 +46,9 @@ class HandleInertiaRequests extends Middleware
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
-                    'balance' => $request->user()->balance,
                     'outlet_id' => $request->user()->outlet_id,
+                    'balances' => $request->user()->balances()->with('outlet:id,name')->get()
+                        ->map(fn ($b) => ['outlet_id' => $b->outlet_id, 'name' => $b->outlet->name, 'balance' => $b->balance]),
                     'roles' => $request->user()->getRoleNames(),
                     'permissions' => $request->user()->getAllPermissions()->pluck('name'),
                 ],

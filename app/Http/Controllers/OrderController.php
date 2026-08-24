@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\Outlet;
+use App\Models\UserBalance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -86,7 +87,7 @@ class OrderController extends Controller
                 ];
             }
 
-            if (auth()->user()->balance < $total) {
+            if (UserBalance::balanceOf(auth()->id(), $validated['outlet_id']) < $total) {
                 throw ValidationException::withMessages(['items' => 'Saldo tidak cukup.']);
             }
 

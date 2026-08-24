@@ -21,6 +21,14 @@ const props = defineProps<{
         status: string;
         created_at: string;
     }>;
+    balanceTransactions: Array<{
+        id: number;
+        type: string;
+        amount: number;
+        note: string | null;
+        outlet: { name: string };
+        created_at: string;
+    }>;
 }>();
 
 const page = usePage();
@@ -53,7 +61,13 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
         <div class="saldo-card">
             <span class="saldo-label">Saldo Saya</span>
-            <span class="saldo-value">{{ coin(page.props.auth?.user?.balance ?? 0) }}</span>
+            <div class="saldo-list">
+                <div v-for="b in page.props.auth?.user?.balances ?? []" :key="b.outlet_id" class="saldo-row">
+                    <span class="saldo-outlet">{{ b.name }}</span>
+                    <span class="saldo-value">{{ coin(b.balance) }}</span>
+                </div>
+                <div v-if="(page.props.auth?.user?.balances ?? []).length === 0" class="saldo-empty">Belum ada saldo. Isi di kasir kantin.</div>
+            </div>
         </div>
 
         <div v-if="can('order.create')" class="feature-card order-card" @click="go('menu.catalog')">
@@ -131,6 +145,28 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
                 </div>
             </div>
         </div>
+
+        <div class="section-header">
+            <h3 class="section-title">Riwayat Saldo</h3>
+        </div>
+
+        <div v-if="balanceTransactions.length === 0" class="empty-card">Belum ada transaksi saldo.</div>
+
+        <div v-else class="request-list">
+            <div v-for="t in balanceTransactions" :key="t.id" class="request-card">
+                <div class="request-header">
+                    <span class="request-code">{{ t.type === 'topup' ? 'Isi Saldo' : 'Pembelian' }}</span>
+                    <var-chip :type="t.type === 'topup' ? 'success' : 'danger'" size="small" round>
+                        {{ t.type === 'topup' ? '+' : '-' }} {{ coin(t.amount) }}
+                    </var-chip>
+                </div>
+                <div class="request-meta">
+                    <span>{{ t.outlet?.name }}</span>
+                    <span v-if="t.note">{{ t.note }}</span>
+                    <span>{{ t.created_at }}</span>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -168,8 +204,8 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
     border: 1px solid #f1f5f9;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .saldo-label {
@@ -178,10 +214,33 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
     font-weight: 600;
 }
 
+.saldo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.saldo-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.saldo-outlet {
+    font-size: 13px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
 .saldo-value {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 800;
     color: #f57c00;
+}
+
+.saldo-empty {
+    font-size: 12px;
+    color: #94a3b8;
 }
 
 .stat-grid {

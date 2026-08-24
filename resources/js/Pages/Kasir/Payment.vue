@@ -89,6 +89,9 @@ const confirmPay = (order: any) => {
             <var-button class="search-btn" @click="doSearch">
                 <var-icon name="magnify" :size="20" />
             </var-button>
+            <var-button class="saldo-btn" @click="router.get(route('kasir.saldo'))">
+                Isi Saldo
+            </var-button>
         </div>
 
         <div v-if="orders.data.length === 0" class="empty">
@@ -238,5 +241,15 @@ const confirmPay = (order: any) => {
     color: #ffffff;
     border-radius: 100px;
     font-weight: 700;
+}
+
+.saldo-btn {
+    background: linear-gradient(135deg, #fb8c00, #f57c00);
+    color: #ffffff;
+    border-radius: 100px;
+    flex-shrink: 0;
+    font-weight: 700;
+    height: 40px;
+    margin-left: 4px;
 }
 </style>
