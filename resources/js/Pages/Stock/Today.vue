@@ -32,7 +32,7 @@ props.items.forEach((i) => {
 });
 
 const saving = ref(false);
-const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
+const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
 const save = () => {
     saving.value = true;
@@ -68,7 +68,7 @@ const save = () => {
         <div v-for="i in items" :key="i.id" class="stock-row">
             <div class="stock-info">
                 <span class="stock-name">{{ i.name }}</span>
-                <span class="stock-price">{{ rupiah(i.price) }}</span>
+                <span class="stock-price">{{ coin(i.price) }}</span>
             </div>
             <var-input
                 v-model="stocks[i.id]"

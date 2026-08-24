@@ -32,7 +32,7 @@ const switchOutlet = (id: number) => {
     router.get(route('kasir.index', { outlet: id }), {}, { preserveState: false });
 };
 
-const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
+const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
 type ChipType = 'default' | 'primary' | 'info' | 'success' | 'warning' | 'danger';
 
@@ -49,7 +49,7 @@ const doSearch = () => {
 const confirmPay = (order: any) => {
     Dialog({
         title: 'Konfirmasi Pembayaran',
-        message: `Lunasi ${order.nota_code} (${rupiah(order.total_amount)})?`,
+        message: `Lunasi ${order.nota_code} (${coin(order.total_amount)})?`,
         confirmButtonText: 'Ya, Lunas',
         cancelButtonText: 'Batal',
         onConfirm: () => {
@@ -106,7 +106,7 @@ const confirmPay = (order: any) => {
                 </span>
             </div>
             <div class="order-footer">
-                <span class="order-total">{{ rupiah(o.total_amount) }}</span>
+                <span class="order-total">{{ coin(o.total_amount) }}</span>
                 <var-button
                     v-if="o.status === 'pending'"
                     type="primary"

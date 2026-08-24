@@ -35,7 +35,7 @@ type ChipType = 'default' | 'primary' | 'info' | 'success' | 'warning' | 'danger
 const statusChip: Record<string, ChipType> = { pending: 'warning', paid: 'success', cancelled: 'danger' };
 const statusLabel: Record<string, string> = { pending: 'BELUM BAYAR', paid: 'LUNAS', cancelled: 'BATAL' };
 
-const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
+const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
 const loadMore = () => {
     if (finished.value || loading.value) return;
@@ -99,7 +99,7 @@ const refresh = () => {
                         <div class="row-meta">
                             <span>{{ o.user?.name }}</span>
                             <span>{{ o.outlet?.name }}</span>
-                            <span>{{ rupiah(o.total_amount) }}</span>
+                            <span>{{ coin(o.total_amount) }}</span>
                             <span>{{ o.created_at }}</span>
                         </div>
                     </div>

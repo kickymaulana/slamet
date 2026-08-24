@@ -37,7 +37,7 @@ onMounted(async () => {
     }
 });
 
-const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
+const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
 type ChipType = 'default' | 'primary' | 'info' | 'success' | 'warning' | 'danger';
 
@@ -84,13 +84,13 @@ const statusLabel: Record<string, string> = { pending: 'BELUM BAYAR', paid: 'LUN
             <div v-for="oi in order.items" :key="oi.id" class="item-row">
                 <div class="item-left">
                     <span class="item-name">{{ oi.item_name }}</span>
-                    <span class="item-qty">{{ rupiah(oi.price) }} × {{ oi.qty }}</span>
+                    <span class="item-qty">{{ coin(oi.price) }} × {{ oi.qty }}</span>
                 </div>
-                <span class="item-subtotal">{{ rupiah(oi.subtotal) }}</span>
+                <span class="item-subtotal">{{ coin(oi.subtotal) }}</span>
             </div>
             <div class="total-row">
                 <span class="total-label">Total</span>
-                <span class="total-value">{{ rupiah(order.total_amount) }}</span>
+                <span class="total-value">{{ coin(order.total_amount) }}</span>
             </div>
         </div>
     </div>

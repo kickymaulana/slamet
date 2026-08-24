@@ -86,6 +86,10 @@ class OrderController extends Controller
                 ];
             }
 
+            if (auth()->user()->balance < $total) {
+                throw ValidationException::withMessages(['items' => 'Saldo tidak cukup.']);
+            }
+
             $order = Order::create([
                 'nota_code' => $this->generateNotaCode(),
                 'user_id' => auth()->id(),

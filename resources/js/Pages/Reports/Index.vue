@@ -27,7 +27,7 @@ const from = ref(props.from);
 const to = ref(props.to);
 const outlet = ref(props.outlet ?? '');
 
-const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
+const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
 type ChipType = 'default' | 'primary' | 'info' | 'success' | 'warning' | 'danger';
 
@@ -70,7 +70,7 @@ const applyFilter = () => {
                 <span class="summary-label">Total Pesanan</span>
             </div>
             <div class="summary-card">
-                <span class="summary-value">{{ rupiah(summary.total_paid) }}</span>
+                <span class="summary-value">{{ coin(summary.total_paid) }}</span>
                 <span class="summary-label">Pendapatan Lunas</span>
             </div>
             <div class="summary-card">
@@ -92,7 +92,7 @@ const applyFilter = () => {
                 <span>{{ o.user?.name }}</span>
                 <span>{{ o.outlet?.name }}</span>
                 <span>{{ o.created_at }}</span>
-                <span class="order-amount">{{ rupiah(o.total_amount) }}</span>
+                <span class="order-amount">{{ coin(o.total_amount) }}</span>
             </div>
         </div>
     </div>

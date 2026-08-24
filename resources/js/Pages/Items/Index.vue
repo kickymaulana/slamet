@@ -64,7 +64,7 @@ const refresh = () => {
     });
 };
 
-const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
+const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 </script>
 
 <template>
@@ -85,7 +85,7 @@ const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
                     <div class="row-info">
                         <span class="name">{{ i.name }}</span>
                         <span class="meta">
-                            {{ i.outlet?.name }} • {{ i.category?.name }} • {{ rupiah(i.price) }}
+                            {{ i.outlet?.name }} • {{ i.category?.name }} • {{ coin(i.price) }}
                             <var-chip v-if="i.stock_date === props.today" size="mini" round :type="i.stock > 0 ? 'success' : 'danger'">
                                 {{ i.stock > 0 ? 'Stok '+i.stock : 'Habis' }}
                             </var-chip>

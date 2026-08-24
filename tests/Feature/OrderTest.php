@@ -22,17 +22,17 @@ class OrderTest extends TestCase
         $this->seed(RolesAndPermissionsSeeder::class);
     }
 
-    private function karyawan(): User
+    private function karyawan(int $balance = 100000): User
     {
-        $user = User::factory()->create(['is_approved' => true]);
+        $user = User::factory()->create(['is_approved' => true, 'balance' => $balance]);
         $user->assignRole('karyawan');
 
         return $user;
     }
 
-    private function kasir(): User
+    private function kasir(int $balance = 100000): User
     {
-        $user = User::factory()->create(['is_approved' => true]);
+        $user = User::factory()->create(['is_approved' => true, 'balance' => $balance]);
         $user->assignRole('kasir');
 
         return $user;
@@ -175,6 +175,50 @@ class OrderTest extends TestCase
         $item = $this->makeItem(5);
 
         $this->actingAs($this->kasir())->post('/orders', $this->orderPayload($item, 1))->assertForbidden();
+    }
+
+    public function test_order_rejected_when_balance_insufficient(): void
+    {
+        $item = $this->makeItem(5);
+
+        $response = $this->actingAs($this->karyawan(5000))->post('/orders', $this->orderPayload($item, 2));
+
+        $response->assertSessionHasErrors('items');
+        $this->assertSame(5, $item->fresh()->stock);
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_kasir_pay_deducts_balance(): void
+    {
+        $item = $this->makeItem(5);
+        $karyawan = $this->karyawan();
+        $kasir = $this->kasir();
+
+        $this->actingAs($karyawan)->post('/orders', $this->orderPayload($item, 1));
+        $order = Order::firstOrFail();
+
+        $this->actingAs($kasir)->post("/kasir/{$order->id}/pay");
+
+        $this->assertSame(100000 - $order->total_amount, $karyawan->fresh()->balance);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => Order::STATUS_PAID]);
+    }
+
+    public function test_kasir_pay_rejected_when_balance_insufficient(): void
+    {
+        $item = $this->makeItem(5);
+        $karyawan = $this->karyawan();
+        $kasir = $this->kasir();
+
+        $this->actingAs($karyawan)->post('/orders', $this->orderPayload($item, 1));
+        $order = Order::firstOrFail();
+
+        // Saldo turun setelah order dibuat (mis. pesanan lain terpotong).
+        $karyawan->update(['balance' => 5000]);
+
+        $this->actingAs($kasir)->post("/kasir/{$order->id}/pay")->assertStatus(422);
+
+        $this->assertSame(5000, $karyawan->fresh()->balance);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => Order::STATUS_PENDING]);
     }
 
     public function test_order_index_scoped_to_owner_for_karyawan(): void

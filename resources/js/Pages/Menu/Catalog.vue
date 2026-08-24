@@ -32,7 +32,7 @@ const searchQuery = ref('');
 
 onMounted(() => { outletId.value = props.active_outlet; });
 
-const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
+const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
 const qtyOf = (itemId: number) => cart.value[itemId]?.qty ?? 0;
 
@@ -127,7 +127,7 @@ const closePhotoViewer = () => { showPhotoViewer.value = false; };
                     <span class="item-name">{{ item.name }}</span>
                     <span v-if="item.description" class="item-desc">{{ item.description }}</span>
                     <span class="item-price" :class="{ free: item.price === 0 }">
-                        {{ item.price === 0 ? 'GRATIS' : rupiah(item.price) }}
+                        {{ item.price === 0 ? 'GRATIS' : coin(item.price) }}
                     </span>
                 </div>
                 <div class="item-qty">

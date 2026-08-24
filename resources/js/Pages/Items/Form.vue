@@ -136,7 +136,7 @@ const remove = () => {
             />
             <var-input v-model="form.name" label="Nama Menu" />
             <var-input v-model="form.description" label="Deskripsi" :textarea="true" />
-            <var-input v-model="form.price" label="Harga (Rp)" type="number" />
+            <var-input v-model="form.price" label="Harga (Coin)" type="number" />
             <var-input v-model="form.stock" label="Stok" type="number" />
 
             <div class="field-row">

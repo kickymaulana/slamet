@@ -41,7 +41,7 @@ const statusLabel: Record<string, string> = {
     cancelled: 'BATAL',
 };
 
-const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
+const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 </script>
 
 <template>
@@ -49,6 +49,11 @@ const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
         <div class="welcome-card">
             <span class="welcome-title">Selamat datang! 🍽️</span>
             <span class="welcome-sub">Pesan makan tanpa antre, bayar di kasir.</span>
+        </div>
+
+        <div class="saldo-card">
+            <span class="saldo-label">Saldo Saya</span>
+            <span class="saldo-value">{{ coin(page.props.auth?.user?.balance ?? 0) }}</span>
         </div>
 
         <div v-if="can('order.create')" class="feature-card order-card" @click="go('menu.catalog')">
@@ -121,7 +126,7 @@ const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
                 </div>
                 <div class="request-meta">
                     <span>{{ o.user?.name }}</span>
-                    <span>{{ rupiah(o.total_amount) }}</span>
+                    <span>{{ coin(o.total_amount) }}</span>
                     <span>{{ o.created_at }}</span>
                 </div>
             </div>
@@ -154,6 +159,29 @@ const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
 .welcome-sub {
     font-size: 13px;
     opacity: 0.9;
+}
+
+.saldo-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.saldo-label {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.saldo-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: #f57c00;
 }
 
 .stat-grid {

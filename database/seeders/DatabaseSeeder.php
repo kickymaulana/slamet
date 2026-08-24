@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             'password' => 'password',
             'nik' => 'KD220004',
             'is_approved' => true,
+            'balance' => 100000,
         ]);
         $admin->assignRole('admin');
 
@@ -29,6 +30,7 @@ class DatabaseSeeder extends Seeder
             'password' => 'password',
             'nik' => 'D260065',
             'is_approved' => true,
+            'balance' => 100000,
         ]);
         $kasir->assignRole('kasir');
 
@@ -38,6 +40,7 @@ class DatabaseSeeder extends Seeder
             'password' => 'password',
             'nik' => 'K190327',
             'is_approved' => true,
+            'balance' => 100000,
         ]);
         $karyawan->assignRole('karyawan');
 

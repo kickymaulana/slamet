@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Outlet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class PaymentController extends Controller
@@ -34,13 +35,20 @@ class PaymentController extends Controller
 
     public function pay(Order $order, Request $request)
     {
-        abort_if($order->status !== Order::STATUS_PENDING, 422);
+        DB::transaction(function () use ($order) {
+            $order->lockForUpdate();
+            abort_if($order->status !== Order::STATUS_PENDING, 422);
 
-        $order->update([
-            'status' => Order::STATUS_PAID,
-            'paid_at' => now(),
-            'paid_by' => auth()->id(),
-        ]);
+            $user = $order->user()->lockForUpdate()->firstOrFail();
+            abort_if($user->balance < $order->total_amount, 422, 'Saldo tidak cukup.');
+
+            $user->decrement('balance', $order->total_amount);
+            $order->update([
+                'status' => Order::STATUS_PAID,
+                'paid_at' => now(),
+                'paid_by' => auth()->id(),
+            ]);
+        });
 
         $referer = $request->headers->get('referer');
         $q = $referer ? parse_url($referer, PHP_URL_QUERY) : null;

@@ -12,14 +12,20 @@ const page = usePage();
 const form = reactive({ notes: '' });
 const saving = ref(false);
 
-const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
-const canSubmit = computed(() => cartLines.value.length > 0);
+const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
+const balance = computed(() => page.props.auth?.user?.balance ?? 0);
+const insufficient = computed(() => balance.value < cartTotal.value);
+const canSubmit = computed(() => cartLines.value.length > 0 && !insufficient.value);
 
 const errors = computed(() => (page.props as any).errors ?? {});
 
 const submit = () => {
-    if (!canSubmit.value) {
+    if (cartLines.value.length === 0) {
         Snackbar.warning('Keranjang masih kosong.');
+        return;
+    }
+    if (insufficient.value) {
+        Snackbar.warning('Saldo tidak cukup.');
         return;
     }
     saving.value = true;
@@ -52,10 +58,10 @@ const submit = () => {
             <div v-for="line in cartLines" :key="line.item_id" class="line-card">
                 <div class="line-info">
                     <span class="line-name">{{ line.name }}</span>
-                    <span class="line-price">{{ rupiah(line.price) }} × {{ line.qty }}</span>
+                    <span class="line-price">{{ coin(line.price) }} × {{ line.qty }}</span>
                 </div>
                 <div class="line-right">
-                    <span class="line-subtotal">{{ rupiah(line.price * line.qty) }}</span>
+                    <span class="line-subtotal">{{ coin(line.price * line.qty) }}</span>
                     <var-button round text class="qty-btn" @click="setQty(line.item_id, line.qty - 1)">
                         <var-icon name="delete" :size="16" />
                     </var-button>
@@ -71,14 +77,24 @@ const submit = () => {
             </div>
 
             <div class="total-card">
+                <span class="total-label">Saldo Kamu</span>
+                <span class="total-value">{{ coin(balance) }}</span>
+            </div>
+
+            <div class="total-card">
                 <span class="total-label">Total</span>
-                <span class="total-value">{{ rupiah(cartTotal) }}</span>
+                <span class="total-value">{{ coin(cartTotal) }}</span>
+            </div>
+
+            <div v-if="insufficient" class="error-box">
+                Saldo tidak cukup. Sisa setelah dipotong: {{ coin(balance) }}.
             </div>
 
             <var-button
                 class="submit-btn"
                 block
                 :loading="saving"
+                :disabled="insufficient"
                 @click="submit"
             >
                 Buat Pesanan

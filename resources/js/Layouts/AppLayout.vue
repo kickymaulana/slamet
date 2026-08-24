@@ -23,7 +23,7 @@ const goCheckout = () => {
     router.get(route('checkout'));
 };
 
-const rupiah = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
+const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
 const pageTitle = computed(() => {
     const current = route().current() ?? '';
@@ -153,7 +153,7 @@ const logout = () => {
                     <div v-if="showCart" class="cart-pill" @click="cartOpen = true">
                         <var-icon name="cart" :size="18" />
                         <span class="cart-pill-count">{{ cartCount }}</span>
-                        <span class="cart-pill-total">{{ rupiah(cartTotal) }}</span>
+                        <span class="cart-pill-total">{{ coin(cartTotal) }}</span>
                     </div>
                     <var-button v-if="isSearchable" round text @click="startSearch">
                         <var-icon name="magnify" :size="22" />
@@ -247,10 +247,10 @@ const logout = () => {
                     </div>
                     <div class="cart-line-info">
                         <span class="cart-line-name">{{ line.name }}</span>
-                        <span class="cart-line-price">{{ rupiah(line.price) }} × {{ line.qty }}</span>
+                        <span class="cart-line-price">{{ coin(line.price) }} × {{ line.qty }}</span>
                     </div>
                     <div class="cart-line-actions">
-                        <span class="cart-line-subtotal">{{ rupiah(line.price * line.qty) }}</span>
+                        <span class="cart-line-subtotal">{{ coin(line.price * line.qty) }}</span>
                         <var-button round text class="qty-btn" @click="setQty(line.item_id, line.qty - 1)">
                             <var-icon name="minus" :size="16" />
                         </var-button>
@@ -263,7 +263,7 @@ const logout = () => {
 
                 <div v-if="cartLines.length > 0" class="cart-total-row">
                     <span class="cart-total-label">Total</span>
-                    <span class="cart-total-value">{{ rupiah(cartTotal) }}</span>
+                    <span class="cart-total-value">{{ coin(cartTotal) }}</span>
                 </div>
 
                 <var-button
