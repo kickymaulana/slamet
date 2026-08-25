@@ -111,13 +111,11 @@ class OrderController extends Controller
 
     public function index()
     {
-        $query = Order::with('user', 'items', 'outlet');
-
-        if (! auth()->user()->can('payment.manage')) {
-            $query->where('user_id', auth()->id());
-        }
-
-        $orders = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
+        $orders = Order::with('user', 'items', 'outlet')
+            ->where('user_id', auth()->id())
+            ->orderBy('id', 'desc')
+            ->paginate(20)
+            ->withQueryString();
 
         return Inertia::render('Orders/Index', [
             'orders' => $orders,
@@ -130,7 +128,7 @@ class OrderController extends Controller
         abort_unless($order->user_id === $user->id || $user->can('order.read') || $user->can('payment.manage'), 403);
 
         return Inertia::render('Orders/Show', [
-            'order' => $order->load('user', 'outlet', 'paidBy', 'items'),
+            'order' => $order->load('user', 'outlet', 'paidBy', 'items.item'),
             'qr_text' => route('kasir.index', ['q' => $order->nota_code]),
         ]);
     }

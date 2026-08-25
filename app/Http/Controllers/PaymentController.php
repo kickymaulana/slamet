@@ -27,6 +27,7 @@ class PaymentController extends Controller
     public function index()
     {
         $outletId = $this->outletId();
+        $status = request('status');
         $query = Order::with('user', 'items')->where('outlet_id', $outletId);
 
         if ($q = request('q')) {
@@ -37,11 +38,16 @@ class PaymentController extends Controller
                 ->orderBy('created_at', 'desc');
         }
 
+        if ($status && in_array($status, Order::STATUSES)) {
+            $query->where('status', $status);
+        }
+
         $orders = $query->paginate(20)->withQueryString();
 
         return Inertia::render('Kasir/Payment', [
             'orders' => $orders,
             'query' => request('q', ''),
+            'status' => $status ?: '',
             'outlets' => Outlet::orderBy('id')->get(['id', 'name']),
             'outlet' => $outletId,
         ]);
@@ -142,7 +148,11 @@ class PaymentController extends Controller
         $q = $referer ? parse_url($referer, PHP_URL_QUERY) : null;
         parse_str((string) $q, $params);
 
-        return redirect()->route('kasir.index', ['q' => $params['q'] ?? '', 'outlet' => $params['outlet'] ?? $order->outlet_id])
+        return redirect()->route('kasir.index', [
+            'q' => $params['q'] ?? '',
+            'outlet' => $params['outlet'] ?? $order->outlet_id,
+            'status' => $params['status'] ?? '',
+        ])
             ->with('flash', ['success' => "Pesanan {$order->nota_code} lunas."]);
     }
 }

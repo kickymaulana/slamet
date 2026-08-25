@@ -30,15 +30,15 @@ class RolesAndPermissionsSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'admin']);
         $admin->syncPermissions($permissions);
 
-        $kasir = Role::firstOrCreate(['name' => 'kasir']);
-        $kasir->syncPermissions([
+        $petugas = Role::firstOrCreate(['name' => 'Petugas Kantin']);
+        $petugas->syncPermissions([
             'order.read', 'payment.manage',
             'item.read', 'item.create', 'item.update', 'item.delete',
             'stock.manage',
             'category.read', 'category.create', 'category.update', 'category.delete',
         ]);
 
-        $karyawan = Role::firstOrCreate(['name' => 'karyawan']);
-        $karyawan->syncPermissions(['order.create', 'order.read']);
+        $user = Role::firstOrCreate(['name' => 'User']);
+        $user->syncPermissions(['order.create', 'order.read']);
     }
 }

@@ -100,8 +100,6 @@ class ItemController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|integer|min:0',
-            'stock' => 'required|integer|min:0',
-            'stock_date' => 'nullable|date',
             'is_active' => 'boolean',
         ]);
 
@@ -127,8 +125,6 @@ class ItemController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|integer|min:0',
-            'stock' => 'required|integer|min:0',
-            'stock_date' => 'nullable|date',
             'is_active' => 'boolean',
         ]);
 

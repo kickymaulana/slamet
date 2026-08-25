@@ -8,6 +8,7 @@ use App\Http\Controllers\MasterController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SaldoController;
 use App\Http\Controllers\StockController;
 use Illuminate\Support\Facades\Route;
 
@@ -83,4 +84,9 @@ Route::middleware('auth')->group(function () {
     // Laporan
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index')
         ->middleware('permission:report.read');
+
+    // Saldo (riwayat + transfer)
+    Route::get('/saldo/riwayat', [SaldoController::class, 'riwayat'])->name('saldo.riwayat');
+    Route::get('/saldo/transfer', [SaldoController::class, 'transfer'])->name('saldo.transfer');
+    Route::post('/saldo/transfer', [SaldoController::class, 'transferSubmit'])->name('saldo.transfer.submit');
 });

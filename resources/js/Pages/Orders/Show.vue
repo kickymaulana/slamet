@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import QRCode from 'qrcode';
+import { route } from 'ziggy-js';
 import AppLayout from '../../Layouts/AppLayout.vue';
 
 defineOptions({ layout: AppLayout });
@@ -19,10 +20,12 @@ const props = defineProps<{
         created_at: string;
         items: Array<{
             id: number;
+            item_id: number;
             item_name: string;
             price: number;
             qty: number;
             subtotal: number;
+            item?: { photo: string | null } | null;
         }>;
     };
     qr_text: string;
@@ -43,6 +46,18 @@ type ChipType = 'default' | 'primary' | 'info' | 'success' | 'warning' | 'danger
 
 const statusChip: Record<string, ChipType> = { pending: 'warning', paid: 'success', cancelled: 'danger' };
 const statusLabel: Record<string, string> = { pending: 'BELUM BAYAR', paid: 'LUNAS', cancelled: 'BATAL' };
+
+const showPhotoViewer = ref(false);
+const currentPhotoUrl = ref('');
+const currentPhotoName = ref('');
+
+const openPhotoViewer = (url: string, name: string) => {
+    currentPhotoUrl.value = url;
+    currentPhotoName.value = name;
+    showPhotoViewer.value = true;
+};
+
+const closePhotoViewer = () => { showPhotoViewer.value = false; };
 </script>
 
 <template>
@@ -82,6 +97,10 @@ const statusLabel: Record<string, string> = { pending: 'BELUM BAYAR', paid: 'LUN
 
         <div class="white-card">
             <div v-for="oi in order.items" :key="oi.id" class="item-row">
+                <div class="item-photo" style="cursor: zoom-in" @click="oi.item?.photo && openPhotoViewer(route('items.foto', { item: oi.item_id }), oi.item_name)">
+                    <img v-if="oi.item?.photo" :src="route('items.foto', { item: oi.item_id })" :alt="oi.item_name" loading="lazy" />
+                    <var-icon v-else name="image-outline" :size="20" color="#cbd5e1" />
+                </div>
                 <div class="item-left">
                     <span class="item-name">{{ oi.item_name }}</span>
                     <span class="item-qty">{{ coin(oi.price) }} × {{ oi.qty }}</span>
@@ -93,6 +112,14 @@ const statusLabel: Record<string, string> = { pending: 'BELUM BAYAR', paid: 'LUN
                 <span class="total-value">{{ coin(order.total_amount) }}</span>
             </div>
         </div>
+
+        <!-- Photo Viewer Overlay -->
+        <Transition name="fade">
+            <div v-if="showPhotoViewer" class="photo-overlay" @click="closePhotoViewer">
+                <div class="photo-title">{{ currentPhotoName }}</div>
+                <img :src="currentPhotoUrl" alt="preview" class="photo-image" @click.stop />
+            </div>
+        </Transition>
     </div>
 </template>
 
@@ -161,6 +188,26 @@ const statusLabel: Record<string, string> = { pending: 'BELUM BAYAR', paid: 'LUN
     align-items: center;
     padding: 8px 0;
     border-bottom: 1px solid #f1f5f9;
+    gap: 10px;
+}
+
+.item-photo {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.item-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .item-left {
@@ -203,5 +250,43 @@ const statusLabel: Record<string, string> = { pending: 'BELUM BAYAR', paid: 'LUN
     font-size: 18px;
     font-weight: 800;
     color: #f57c00;
+}
+
+/* Photo viewer overlay */
+.photo-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.photo-title {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.photo-image {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 </style>

@@ -11,10 +11,15 @@ const auth = computed(() => page.props.auth);
 const can = (permission: string) =>
     !!auth.value?.user && auth.value.user.permissions.includes(permission);
 
+const currentRoute = computed(() => {
+    void page.url;
+    return route().current() ?? '';
+});
+
 const cartOpen = ref(false);
 
 const showCart = computed(() => {
-    const current = route().current() ?? '';
+    const current = currentRoute.value;
     return current === 'menu.catalog' && cartCount.value > 0;
 });
 
@@ -26,7 +31,7 @@ const goCheckout = () => {
 const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
 const pageTitle = computed(() => {
-    const current = route().current() ?? '';
+    const current = currentRoute.value;
     if (current === 'dashboard') return auth.value?.user?.name ?? 'SLAMET';
     if (current === 'menu.catalog') return 'Menu Hari Ini';
     if (current === 'checkout') return 'Checkout';
@@ -34,6 +39,8 @@ const pageTitle = computed(() => {
     if (current === 'orders.show') return 'Detail Pesanan';
     if (current === 'kasir.index') return 'Kasir Kantin';
     if (current === 'kasir.saldo') return 'Isi Saldo';
+    if (current === 'saldo.riwayat') return 'Riwayat Saldo';
+    if (current === 'saldo.transfer') return 'Transfer Saldo';
     if (current === 'reports.index') return 'Laporan';
     if (current === 'items.index') return 'Kelola Menu';
     if (current === 'items.create') return 'Tambah Menu';
@@ -47,12 +54,12 @@ const pageTitle = computed(() => {
 });
 
 const isSearchable = computed(() => {
-    const current = route().current() ?? '';
+    const current = currentRoute.value;
     return ['items.index', 'orders.index', 'kasir.index', 'reports.index', 'masters.index', 'users.index'].includes(current);
 });
 
 const showAdd = computed(() => {
-    const current = route().current() ?? '';
+    const current = currentRoute.value;
     return current === 'items.index' || current === 'masters.index';
 });
 
@@ -66,7 +73,7 @@ const exitSearch = () => {
 };
 
 const goCreate = () => {
-    const current = route().current() ?? '';
+    const current = currentRoute.value;
     if (current === 'items.index') {
         router.get(route('items.create'));
     } else if (current === 'masters.index') {
@@ -91,17 +98,17 @@ const navItems = computed(() => {
 });
 
 const showNav = computed(() => {
-    const current = route().current() ?? '';
+    const current = currentRoute.value;
     return ['dashboard', 'menu.catalog', 'orders.index', 'kasir.index', 'reports.index'].includes(current);
 });
 
 const activeIndex = ref(0);
 
 const syncActive = () => {
-    const current = route().current();
+    const current = currentRoute.value;
     const idx = navItems.value.findIndex((i) => {
-        if (i.name === 'kasir.index') return (current ?? '').startsWith('kasir.');
-        return (current ?? '') === i.name;
+        if (i.name === 'kasir.index') return current.startsWith('kasir.');
+        return current === i.name;
     });
     activeIndex.value = idx >= 0 ? idx : 0;
 };
@@ -110,17 +117,17 @@ watch(navItems, syncActive, { immediate: true });
 
 const onTabChange = (active: string | number) => {
     const item = navItems.value[Number(active)];
-    if (!item || route().current() === item.name) return;
+    if (!item || currentRoute.value === item.name) return;
     router.get(route(item.name));
 };
 
 const showBack = computed(() => {
-    const current = route().current() ?? '';
+    const current = currentRoute.value;
     return current !== 'dashboard' && !showNav.value;
 });
 
 const goBack = () => {
-    const current = route().current() ?? '';
+    const current = currentRoute.value;
     if (current === 'checkout') {
         router.get(route('menu.catalog'));
     } else if (current.startsWith('kasir.')) {

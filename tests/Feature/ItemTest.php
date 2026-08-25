@@ -33,7 +33,7 @@ class ItemTest extends TestCase
     private function kasir(Outlet $outlet): User
     {
         $user = User::factory()->create(['is_approved' => true, 'outlet_id' => $outlet->id]);
-        $user->assignRole('kasir');
+        $user->assignRole('Petugas Kantin');
 
         return $user;
     }

@@ -33,24 +33,24 @@ class UserApprovalTest extends TestCase
     public function test_admin_can_approve_pending_user(): void
     {
         $admin = $this->makeUser('admin');
-        $pending = $this->makeUser('karyawan', [
+        $pending = $this->makeUser('User', [
             'email' => 'pending@test',
             'nik' => 'NIK123',
             'is_approved' => false,
-            'requested_role' => 'karyawan',
+            'requested_role' => 'User',
         ]);
 
         $this->actingAs($admin)
-            ->post('/users/'.$pending->id.'/approve', ['role' => 'karyawan'])
+            ->post('/users/'.$pending->id.'/approve', ['role' => 'User'])
             ->assertSessionHasNoErrors();
 
         $this->assertTrue($pending->fresh()->is_approved);
-        $this->assertTrue($pending->fresh()->hasRole('karyawan'));
+        $this->assertTrue($pending->fresh()->hasRole('User'));
     }
 
     public function test_karyawan_cannot_access_user_management(): void
     {
-        $karyawan = $this->makeUser('karyawan');
+        $karyawan = $this->makeUser('User');
 
         $this->actingAs($karyawan)
             ->get('/users')

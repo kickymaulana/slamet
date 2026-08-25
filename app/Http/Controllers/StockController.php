@@ -19,7 +19,7 @@ class StockController extends Controller
             ->where('is_active', true)
             ->orderBy('category_id')
             ->orderBy('name')
-            ->get(['id', 'name', 'stock', 'stock_date', 'category_id', 'price']);
+            ->get(['id', 'name', 'photo', 'stock', 'stock_date', 'category_id', 'price']);
 
         return Inertia::render('Stock/Today', [
             'items' => $items,

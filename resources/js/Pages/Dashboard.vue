@@ -56,7 +56,7 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
     <div class="dashboard">
         <div class="welcome-card">
             <span class="welcome-title">Selamat datang! 🍽️</span>
-            <span class="welcome-sub">Pesan makan tanpa antre, bayar di kasir.</span>
+            <span class="welcome-sub">Pesan makan tanpa antre, bayar pakai saldo Coin.</span>
         </div>
 
         <div class="saldo-card">
@@ -68,6 +68,7 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
                 </div>
                 <div v-if="(page.props.auth?.user?.balances ?? []).length === 0" class="saldo-empty">Belum ada saldo. Isi di kasir kantin.</div>
             </div>
+            <a :href="route('saldo.transfer')" class="see-all-link">Transfer</a>
         </div>
 
         <div v-if="can('order.create')" class="feature-card order-card" @click="go('menu.catalog')">
@@ -126,6 +127,7 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
         <div class="section-header">
             <h3 class="section-title">Pesanan Terbaru</h3>
+            <a :href="route('orders.index')" class="see-all-link">Lihat Semua</a>
         </div>
 
         <div v-if="recentOrders.length === 0" class="empty-card">Belum ada pesanan.</div>
@@ -148,6 +150,7 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 
         <div class="section-header">
             <h3 class="section-title">Riwayat Saldo</h3>
+            <a :href="route('saldo.riwayat')" class="see-all-link">Lihat Semua</a>
         </div>
 
         <div v-if="balanceTransactions.length === 0" class="empty-card">Belum ada transaksi saldo.</div>
@@ -329,6 +332,13 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
 }
 
 .section-title { font-size: 15px; font-weight: 700; color: #1e293b; margin: 0; }
+
+.see-all-link {
+    font-size: 12px;
+    color: #fb8c00;
+    text-decoration: none;
+    font-weight: 600;
+}
 
 .request-list { display: flex; flex-direction: column; gap: 12px; }
 

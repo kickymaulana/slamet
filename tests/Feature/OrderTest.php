@@ -27,7 +27,7 @@ class OrderTest extends TestCase
     private function karyawan(Outlet $outlet, int $balance = 100000): User
     {
         $user = User::factory()->create(['is_approved' => true, 'nik' => 'NIK-'.uniqid()]);
-        $user->assignRole('karyawan');
+        $user->assignRole('User');
         UserBalance::create(['user_id' => $user->id, 'outlet_id' => $outlet->id, 'balance' => $balance]);
 
         return $user;
@@ -36,7 +36,7 @@ class OrderTest extends TestCase
     private function kasir(Outlet $outlet, int $balance = 100000): User
     {
         $user = User::factory()->create(['is_approved' => true, 'outlet_id' => $outlet->id]);
-        $user->assignRole('kasir');
+        $user->assignRole('Petugas Kantin');
         UserBalance::create(['user_id' => $user->id, 'outlet_id' => $outlet->id, 'balance' => $balance]);
 
         return $user;
@@ -179,7 +179,7 @@ class OrderTest extends TestCase
 
         $this->actingAs($karyawan)->post('/orders', $this->orderPayload($item, 1, $outlet));
         $order = Order::firstOrFail();
-        $kasirUrl = '/kasir?q='.urlencode($order->nota_code).'&outlet='.$outlet->id;
+        $kasirUrl = '/kasir?q='.urlencode($order->nota_code).'&outlet='.$outlet->id.'&status=';
 
         $this->actingAs($kasir)->get($kasirUrl)->assertOk();
         $inertiaHeaders = ['X-Inertia' => 'true', 'X-Inertia-Version' => Inertia::getVersion()];
@@ -330,5 +330,50 @@ class OrderTest extends TestCase
             'outlet_id' => $outlet1->id,
             'type' => BalanceTransaction::TYPE_TOPUP,
         ]);
+    }
+
+    public function test_transfer_credits_receiver_and_records_both(): void
+    {
+        $outlet = $this->outlet();
+        $sender = $this->karyawan($outlet, 50000);
+        $receiver = $this->karyawan($outlet, 0);
+
+        $this->actingAs($sender)->post('/saldo/transfer', [
+            'outlet_id' => $outlet->id,
+            'nik' => $receiver->nik,
+            'amount' => 20000,
+            'note' => 'jual saldo',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame(30000, UserBalance::balanceOf($sender->id, $outlet->id));
+        $this->assertSame(20000, UserBalance::balanceOf($receiver->id, $outlet->id));
+        $this->assertDatabaseHas('balance_transactions', [
+            'user_id' => $sender->id, 'type' => BalanceTransaction::TYPE_DEDUCTION, 'amount' => 20000,
+        ]);
+        $this->assertDatabaseHas('balance_transactions', [
+            'user_id' => $receiver->id, 'type' => BalanceTransaction::TYPE_TOPUP, 'amount' => 20000,
+        ]);
+    }
+
+    public function test_transfer_rejected_when_insufficient_or_self(): void
+    {
+        $outlet = $this->outlet();
+        $sender = $this->karyawan($outlet, 5000);
+        $receiver = $this->karyawan($outlet, 0);
+
+        $this->actingAs($sender)->post('/saldo/transfer', [
+            'outlet_id' => $outlet->id,
+            'nik' => $receiver->nik,
+            'amount' => 10000,
+        ])->assertSessionHasErrors('amount');
+
+        $this->actingAs($sender)->post('/saldo/transfer', [
+            'outlet_id' => $outlet->id,
+            'nik' => $sender->nik,
+            'amount' => 1000,
+        ])->assertSessionHasErrors('nik');
+
+        $this->assertSame(5000, UserBalance::balanceOf($sender->id, $outlet->id));
+        $this->assertSame(0, UserBalance::balanceOf($receiver->id, $outlet->id));
     }
 }

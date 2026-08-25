@@ -12,8 +12,8 @@ const props = defineProps<{
 }>();
 
 const roleOptions = [
-    { label: 'Karyawan', value: 'karyawan' },
-    { label: 'Kasir Kantin', value: 'kasir' },
+    { label: 'User', value: 'User' },
+    { label: 'Petugas Kantin', value: 'Petugas Kantin' },
     { label: 'Admin', value: 'admin' },
 ];
 

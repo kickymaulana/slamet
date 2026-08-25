@@ -8,6 +8,8 @@ use App\Models\Outlet;
 use App\Models\User;
 use App\Models\UserBalance;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -37,7 +39,7 @@ class DatabaseSeeder extends Seeder
             'is_approved' => true,
             'outlet_id' => $outlets[0]->id, // Kantin 1
         ]);
-        $kasir1->assignRole('kasir');
+        $kasir1->assignRole('Petugas Kantin');
 
         $kasir2 = User::create([
             'name' => 'Yildiz Zulhamdy',
@@ -47,7 +49,7 @@ class DatabaseSeeder extends Seeder
             'is_approved' => true,
             'outlet_id' => $outlets[1]->id, // Kantin 2
         ]);
-        $kasir2->assignRole('kasir');
+        $kasir2->assignRole('Petugas Kantin');
 
         $karyawan = User::create([
             'name' => 'Elfrina',
@@ -56,7 +58,7 @@ class DatabaseSeeder extends Seeder
             'nik' => 'K190798',
             'is_approved' => true,
         ]);
-        $karyawan->assignRole('karyawan');
+        $karyawan->assignRole('User');
 
         // Saldo awal: Kantin 1 = 100.000, Kantin 2 = 0
         foreach ([$admin, $kasir1, $kasir2, $karyawan] as $u) {
@@ -112,6 +114,41 @@ class DatabaseSeeder extends Seeder
                 'stock' => $stock,
                 'stock_date' => $today,
             ]);
+        }
+
+        $this->seedPhotos();
+    }
+
+    /**
+     * Buat foto placeholder via GD lalu upload ke MinIO. Skip kalau GD/MinIO tidak tersedia.
+     */
+    private function seedPhotos(): void
+    {
+        if (! extension_loaded('gd') || ! function_exists('imagecreatetruecolor')) {
+            return;
+        }
+
+        try {
+            foreach (Item::whereNull('photo')->get() as $item) {
+                $img = imagecreatetruecolor(400, 300);
+                $bg = imagecolorallocate($img, 253, 240, 234); // peach #fdf0ea
+                imagefill($img, 0, 0, $bg);
+                $text = imagecolorallocate($img, 251, 140, 0); // orange #fb8c00
+                $name = substr($item->name, 0, 22);
+                imagestring($img, 5, intdiv(400 - imagefontwidth(5) * strlen($name), 2), 140, $name, $text);
+
+                ob_start();
+                imagejpeg($img, null, 80);
+                $jpeg = ob_get_clean();
+                imagedestroy($img);
+
+                $filename = time().'-'.Str::random(8).'.jpg';
+                $path = 'items/'.$filename;
+                Storage::disk('minio')->put($path, $jpeg);
+                $item->update(['photo' => $path]);
+            }
+        } catch (\Throwable $e) {
+            // MinIO mati / gagal upload → foto tetap null.
         }
     }
 }

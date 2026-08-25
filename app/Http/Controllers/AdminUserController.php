@@ -19,7 +19,7 @@ class AdminUserController extends Controller
 
         return Inertia::render('Users/Index', [
             'users' => $users,
-            'roles' => ['admin', 'kasir', 'karyawan'],
+            'roles' => ['admin', 'Petugas Kantin', 'User'],
             'outlets' => Outlet::orderBy('id')->get(['id', 'name']),
         ]);
     }
@@ -27,8 +27,8 @@ class AdminUserController extends Controller
     public function approve(User $user, Request $request)
     {
         $validated = $request->validate([
-            'role' => 'required|in:admin,kasir,karyawan',
-            'outlet_id' => ['nullable', 'required_if:role,kasir', 'exists:outlets,id'],
+            'role' => 'required|in:admin,Petugas Kantin,User',
+            'outlet_id' => ['nullable', 'required_if:role,Petugas Kantin', 'exists:outlets,id'],
         ]);
 
         $user->syncRoles([$validated['role']]);
@@ -44,8 +44,8 @@ class AdminUserController extends Controller
     public function updateRole(User $user, Request $request)
     {
         $validated = $request->validate([
-            'role' => 'required|in:admin,kasir,karyawan',
-            'outlet_id' => ['nullable', 'required_if:role,kasir', 'exists:outlets,id'],
+            'role' => 'required|in:admin,Petugas Kantin,User',
+            'outlet_id' => ['nullable', 'required_if:role,Petugas Kantin', 'exists:outlets,id'],
         ]);
 
         $user->syncRoles([$validated['role']]);

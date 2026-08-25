@@ -23,7 +23,7 @@ const props = defineProps<{
 const roleSel = reactive<Record<number, string>>({});
 const outletSel = reactive<Record<number, string>>({});
 props.users.data.forEach((u) => {
-    roleSel[u.id] = (u.requested_role ?? u.roles?.[0]?.name) ?? 'karyawan';
+    roleSel[u.id] = (u.requested_role ?? u.roles?.[0]?.name) ?? 'User';
     outletSel[u.id] = u.outlet_id ? String(u.outlet_id) : '';
 });
 

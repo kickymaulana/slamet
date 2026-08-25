@@ -22,6 +22,7 @@ class DashboardController extends Controller
         ];
 
         $recentOrders = Order::with('user', 'outlet')
+            ->where('user_id', $user->id)
             ->orderBy('id', 'desc')
             ->limit(5)
             ->get(['id', 'nota_code', 'user_id', 'outlet_id', 'total_amount', 'status', 'created_at']);

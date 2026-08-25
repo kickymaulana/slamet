@@ -18,9 +18,21 @@ const props = defineProps<{
         last_page: number;
     };
     query: string;
+    status: string;
     outlets: Array<{ id: number; name: string }>;
     outlet: number;
 }>();
+
+const statusFilters = [
+    { value: '', label: 'Semua' },
+    { value: 'pending', label: 'Belum Bayar' },
+    { value: 'paid', label: 'Lunas' },
+];
+
+const setStatus = (value: string) => {
+    if (value === props.status) return;
+    router.get(route('kasir.index', { status: value, outlet: props.outlet }), {}, { preserveState: false });
+};
 
 searchState.value = props.query;
 
@@ -76,6 +88,18 @@ const confirmPay = (order: any) => {
                 @click="switchOutlet(o.id)"
             >
                 {{ o.name }}
+            </div>
+        </div>
+
+        <div class="status-tabs">
+            <div
+                v-for="f in statusFilters"
+                :key="f.value"
+                class="status-tab"
+                :class="{ active: props.status === f.value }"
+                @click="setStatus(f.value)"
+            >
+                {{ f.label }}
             </div>
         </div>
 
@@ -155,6 +179,29 @@ const confirmPay = (order: any) => {
     background: linear-gradient(135deg, #fb8c00, #f57c00);
     border-color: transparent;
     color: #ffffff;
+}
+
+.status-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.status-tab {
+    padding: 6px 16px;
+    border-radius: 100px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.status-tab.active {
+    background: #fdf0ea;
+    border-color: #fb8c00;
+    color: #f57c00;
 }
 
 .search-bar {
