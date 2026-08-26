@@ -3,13 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
-use App\Models\Item;
 use App\Models\Outlet;
 use App\Models\User;
 use App\Models\UserBalance;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -34,7 +31,7 @@ class DatabaseSeeder extends Seeder
         $kasir1 = User::create([
             'name' => 'Dedi Maulana',
             'email' => 'kasir@slamet.test',
-            'password' => 'password',
+            'password' => 'password123',
             'nik' => 'K190327',
             'is_approved' => true,
             'outlet_id' => $outlets[0]->id, // Kantin 1
@@ -44,7 +41,7 @@ class DatabaseSeeder extends Seeder
         $kasir2 = User::create([
             'name' => 'Yildiz Zulhamdy',
             'email' => 'kasir2@slamet.test',
-            'password' => 'password',
+            'password' => 'password123',
             'nik' => 'D240728',
             'is_approved' => true,
             'outlet_id' => $outlets[1]->id, // Kantin 2
@@ -54,7 +51,7 @@ class DatabaseSeeder extends Seeder
         $karyawan = User::create([
             'name' => 'Elfrina',
             'email' => 'karyawan@slamet.test',
-            'password' => 'password',
+            'password' => 'password123',
             'nik' => 'K190798',
             'is_approved' => true,
         ]);
@@ -71,84 +68,5 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Minuman', 'sort_order' => 3],
             ['name' => 'Snack', 'sort_order' => 4],
         ])->map(fn ($c) => Category::create($c));
-
-        $today = now()->toDateString();
-        $seedItems = [
-            ['Nasi', 'Tanpa Nasi', 0, 200],
-            ['Nasi', 'Nasi 1 Centong', 0, 150],
-            ['Nasi', 'Nasi 1.5 Centong', 0, 100],
-            ['Nasi', 'Nasi 2 Centong', 0, 80],
-            ['Makanan', 'Ayam Goreng', 8000, 40],
-            ['Makanan', 'Ayam Bakar', 10000, 30],
-            ['Makanan', 'Tempe Goreng', 1500, 60],
-            ['Makanan', 'Sayur Sop', 3000, 50],
-            ['Minuman', 'Es Teh', 2000, 70],
-            ['Minuman', 'Kopi Hitam', 3000, 60],
-            ['Minuman', 'Air Mineral', 3000, 80],
-            ['Snack', 'Pisang Goreng', 2000, 50],
-            ['Snack', 'Roti Bakar', 5000, 30],
-        ];
-
-        foreach ($seedItems as [$cat, $name, $price, $stock]) {
-            Item::create([
-                'outlet_id' => $outlets->first()->id,
-                'category_id' => $categories->firstWhere('name', $cat)->id,
-                'name' => $name,
-                'price' => $price,
-                'stock' => $stock,
-                'stock_date' => $today,
-            ]);
-        }
-
-        foreach ([
-            ['Makanan', 'Gado-Gado', 8000, 25],
-            ['Makanan', 'Soto Ayam', 9000, 20],
-            ['Minuman', 'Jus Alpukat', 7000, 15],
-            ['Snack', 'Gorengan', 1000, 80],
-        ] as [$cat, $name, $price, $stock]) {
-            Item::create([
-                'outlet_id' => $outlets->last()->id,
-                'category_id' => $categories->firstWhere('name', $cat)->id,
-                'name' => $name,
-                'price' => $price,
-                'stock' => $stock,
-                'stock_date' => $today,
-            ]);
-        }
-
-        $this->seedPhotos();
-    }
-
-    /**
-     * Buat foto placeholder via GD lalu upload ke MinIO. Skip kalau GD/MinIO tidak tersedia.
-     */
-    private function seedPhotos(): void
-    {
-        if (! extension_loaded('gd') || ! function_exists('imagecreatetruecolor')) {
-            return;
-        }
-
-        try {
-            foreach (Item::whereNull('photo')->get() as $item) {
-                $img = imagecreatetruecolor(400, 300);
-                $bg = imagecolorallocate($img, 253, 240, 234); // peach #fdf0ea
-                imagefill($img, 0, 0, $bg);
-                $text = imagecolorallocate($img, 251, 140, 0); // orange #fb8c00
-                $name = substr($item->name, 0, 22);
-                imagestring($img, 5, intdiv(400 - imagefontwidth(5) * strlen($name), 2), 140, $name, $text);
-
-                ob_start();
-                imagejpeg($img, null, 80);
-                $jpeg = ob_get_clean();
-                imagedestroy($img);
-
-                $filename = time().'-'.Str::random(8).'.jpg';
-                $path = 'items/'.$filename;
-                Storage::disk('minio')->put($path, $jpeg);
-                $item->update(['photo' => $path]);
-            }
-        } catch (\Throwable $e) {
-            // MinIO mati / gagal upload → foto tetap null.
-        }
     }
 }

@@ -36,6 +36,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'item.read', 'item.create', 'item.update', 'item.delete',
             'stock.manage',
             'category.read', 'category.create', 'category.update', 'category.delete',
+            'report.read',
         ]);
 
         $user = Role::firstOrCreate(['name' => 'User']);

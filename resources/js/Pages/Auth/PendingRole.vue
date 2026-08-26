@@ -13,8 +13,6 @@ const props = defineProps<{
 
 const roleOptions = [
     { label: 'User', value: 'User' },
-    { label: 'Petugas Kantin', value: 'Petugas Kantin' },
-    { label: 'Admin', value: 'admin' },
 ];
 
 const form = reactive({
@@ -57,7 +55,7 @@ const submit = () => {
                     Kirim Permintaan
                 </var-button>
 
-                <p class="pending-note">Setelah dikirim, tunggu persetujuan Admin untuk mulai menggunakan SLAMET.</p>
+                <p class="pending-note">Peran akhir ditentukan Admin saat aktivasi. Setelah dikirim, tunggu persetujuan Admin untuk mulai menggunakan SLAMET.</p>
             </div>
         </div>
     </div>

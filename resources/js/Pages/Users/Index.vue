@@ -86,6 +86,7 @@ const activeUsers = props.users.data.filter((u) => u.is_approved);
                     :options="roles.map((r) => ({ label: r, value: r }))"
                 />
                 <var-select
+                    v-if="roleSel[u.id] === 'Petugas Kantin'"
                     v-model="outletSel[u.id]"
                     placeholder="Kantin"
                     size="small"
@@ -115,6 +116,7 @@ const activeUsers = props.users.data.filter((u) => u.is_approved);
                     :options="roles.map((r) => ({ label: r, value: r }))"
                 />
                 <var-select
+                    v-if="roleSel[u.id] === 'Petugas Kantin'"
                     v-model="outletSel[u.id]"
                     placeholder="Kantin"
                     size="small"
