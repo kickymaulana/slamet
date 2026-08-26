@@ -132,6 +132,7 @@ class PaymentController extends Controller
             BalanceTransaction::create([
                 'user_id' => $order->user_id,
                 'outlet_id' => $order->outlet_id,
+                'order_id' => $order->id,
                 'type' => BalanceTransaction::TYPE_DEDUCTION,
                 'amount' => $order->total_amount,
                 'kasir_id' => auth()->id(),

@@ -50,6 +50,7 @@ const pageTitle = computed(() => {
     if (current === 'masters.create') return 'Tambah Kategori';
     if (current === 'masters.edit') return 'Edit Kategori';
     if (current === 'users.index') return 'Kelola Pengguna';
+    if (current === 'users.saldo') return 'Riwayat Saldo User';
     return 'SLAMET';
 });
 
@@ -136,6 +137,12 @@ const goBack = () => {
         router.get(route('items.index'));
     } else if (current === 'orders.show') {
         router.get(route('orders.index'));
+    } else if (current.startsWith('users.')) {
+        if (current === 'users.saldo') {
+            router.get(route('users.index'));
+        } else {
+            router.get(route('dashboard'));
+        }
     } else if (current.startsWith('masters.')) {
         if (current === 'masters.index') {
             router.get(route('dashboard'));

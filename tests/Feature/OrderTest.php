@@ -229,6 +229,7 @@ class OrderTest extends TestCase
         $this->assertDatabaseHas('balance_transactions', [
             'user_id' => $karyawan->id,
             'outlet_id' => $outlet->id,
+            'order_id' => $order->id,
             'type' => BalanceTransaction::TYPE_DEDUCTION,
             'amount' => $order->total_amount,
         ]);

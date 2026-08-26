@@ -13,6 +13,7 @@ const props = defineProps<{
             type: string;
             amount: number;
             note: string | null;
+            order_id: number | null;
             created_at: string;
             outlet: { name: string } | null;
         }>;
@@ -38,6 +39,7 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
             <div class="trans-meta">
                 <span>{{ t.outlet?.name }}</span>
                 <span v-if="t.note">{{ t.note }}</span>
+                <a v-if="t.type === 'deduction' && t.order_id" :href="route('orders.show', { order: t.order_id })" class="detail-link">Lihat Detail</a>
                 <span>{{ t.created_at }}</span>
             </div>
         </div>
@@ -97,6 +99,14 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
     gap: 12px;
     font-size: 12px;
     color: #64748b;
+    align-items: center;
+}
+
+.detail-link {
+    font-size: 12px;
+    color: #fb8c00;
+    font-weight: 700;
+    text-decoration: none;
 }
 
 .pagination {

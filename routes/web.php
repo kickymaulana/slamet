@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:user.manage');
     Route::post('/users/{user}/deactivate', [AdminUserController::class, 'deactivate'])->name('users.deactivate')
         ->middleware('permission:user.manage');
+    Route::get('/users/{user}/saldo', [AdminUserController::class, 'saldo'])->name('users.saldo')
+        ->middleware('permission:user.manage');
 
     // Master data (categories)
     Route::get('/masters/{entity}/create', [MasterController::class, 'create'])->name('masters.create')

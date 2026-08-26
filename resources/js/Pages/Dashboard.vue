@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
+import { usePage, Link } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import { router } from '@inertiajs/vue3';
 import AppLayout from '../Layouts/AppLayout.vue';
@@ -26,6 +26,7 @@ const props = defineProps<{
         type: string;
         amount: number;
         note: string | null;
+        order_id: number | null;
         outlet: { name: string };
         created_at: string;
     }>;
@@ -166,6 +167,7 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
                 <div class="request-meta">
                     <span>{{ t.outlet?.name }}</span>
                     <span v-if="t.note">{{ t.note }}</span>
+                    <a v-if="t.type === 'deduction' && t.order_id" :href="route('orders.show', { order: t.order_id })" class="detail-link">Lihat Detail</a>
                     <span>{{ t.created_at }}</span>
                 </div>
             </div>
@@ -338,6 +340,13 @@ const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
     color: #fb8c00;
     text-decoration: none;
     font-weight: 600;
+}
+
+.detail-link {
+    font-size: 12px;
+    color: #fb8c00;
+    font-weight: 700;
+    text-decoration: none;
 }
 
 .request-list { display: flex; flex-direction: column; gap: 12px; }

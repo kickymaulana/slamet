@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, Link } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import { Dialog, Snackbar } from '@varlet/ui';
 import AppLayout from '../../Layouts/AppLayout.vue';
@@ -60,6 +60,11 @@ const deactivate = (u: any) => {
 
 const pendingUsers = props.users.data.filter((u) => !u.is_approved);
 const activeUsers = props.users.data.filter((u) => u.is_approved);
+
+const coin = (n: number) => n.toLocaleString('id-ID') + ' Coin';
+
+const balancesText = (u: any) =>
+    (u.balances ?? []).map((b: any) => `${b.outlet?.name ?? b.name}: ${coin(b.balance)}`).join(' • ');
 </script>
 
 <template>
@@ -75,6 +80,7 @@ const activeUsers = props.users.data.filter((u) => u.is_approved);
         <div class="user-info">
             <span class="user-name">{{ u.name }}</span>
             <span class="user-meta">{{ u.email }} • NIK: {{ u.nik }}</span>
+            <span v-if="balancesText(u)" class="user-balance">{{ balancesText(u) }}</span>
             <var-chip type="warning" size="mini" round>MENUNGGU</var-chip>
         </div>
         <div class="user-actions">
@@ -105,6 +111,7 @@ const activeUsers = props.users.data.filter((u) => u.is_approved);
         <div class="user-info">
             <span class="user-name">{{ u.name }}</span>
             <span class="user-meta">{{ u.email }} • NIK: {{ u.nik }}</span>
+            <span v-if="balancesText(u)" class="user-balance">{{ balancesText(u) }}</span>
             <var-chip type="success" size="mini" round>{{ u.roles?.[0]?.name ?? '—' }}</var-chip>
         </div>
         <div class="user-actions">
@@ -124,6 +131,7 @@ const activeUsers = props.users.data.filter((u) => u.is_approved);
                 />
             </div>
             <div class="act-btns">
+                <Link :href="route('users.saldo', { user: u.id })" class="riwayat-link">Riwayat</Link>
                 <var-button size="small" text @click="changeRole(u)">Ubah Role</var-button>
                 <var-button size="small" text type="danger" @click="deactivate(u)">Nonaktifkan</var-button>
             </div>
@@ -202,6 +210,24 @@ const activeUsers = props.users.data.filter((u) => u.is_approved);
 .user-meta {
     font-size: 12px;
     color: #64748b;
+}
+
+.user-balance {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f57c00;
+    background: #fdf0ea;
+    border-radius: 6px;
+    padding: 2px 8px;
+    align-self: flex-start;
+}
+
+.riwayat-link {
+    font-size: 12px;
+    color: #fb8c00;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
 }
 
 .user-actions {

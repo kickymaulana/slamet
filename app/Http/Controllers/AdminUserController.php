@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BalanceTransaction;
 use App\Models\Outlet;
 use App\Models\User;
+use App\Models\UserBalance;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,7 +13,7 @@ class AdminUserController extends Controller
 {
     public function index()
     {
-        $users = User::with('roles', 'outlet')
+        $users = User::with('roles', 'outlet', 'balances.outlet')
             ->orderBy('is_approved')
             ->orderBy('name')
             ->paginate(20)
@@ -59,5 +61,25 @@ class AdminUserController extends Controller
         $user->update(['is_approved' => false]);
 
         return back()->with('flash', ['success' => "{$user->name} dinonaktifkan."]);
+    }
+
+    public function saldo(User $user)
+    {
+        $transactions = BalanceTransaction::with('outlet', 'kasir')
+            ->where('user_id', $user->id)
+            ->orderBy('id', 'desc')
+            ->paginate(20)
+            ->withQueryString();
+
+        return Inertia::render('Users/Saldo', [
+            'targetUser' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'nik' => $user->nik,
+                'balances' => $user->balances()->with('outlet:id,name')->get()
+                    ->map(fn ($b) => ['outlet_id' => $b->outlet_id, 'name' => $b->outlet->name, 'balance' => $b->balance]),
+            ],
+            'transactions' => $transactions,
+        ]);
     }
 }
